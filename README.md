@@ -12,6 +12,7 @@ A precise, accessible metronome app for musicians.
 
 - Android 10 (API 29) or higher
 - No special permissions required
+- Java 21
 
 ## Tech Stack
 
