@@ -1,5 +1,7 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,6 +47,8 @@ fun BeatSelectionScreen(
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
+
+    KeepScreenOn(enabled = state.isPlaying)
 
     BeatSelectionContent(
         state = state,
@@ -125,5 +130,22 @@ fun BeatSelectionContent(
             onApply = onApplyTappedBpm,
             onCancel = onCancelTapTempo
         )
+    }
+}
+
+@Composable
+private fun KeepScreenOn(enabled: Boolean) {
+    val context = LocalContext.current
+    val activity = context as? Activity ?: return
+
+    DisposableEffect(enabled) {
+        if (enabled) {
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 }
