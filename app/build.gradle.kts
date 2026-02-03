@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
@@ -35,10 +34,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -63,9 +58,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.54")
+    implementation("com.google.dagger:hilt-android:2.58")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    ksp("com.google.dagger:hilt-compiler:2.54")
+    ksp("com.google.dagger:hilt-compiler:2.58")
 
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
@@ -76,8 +71,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.54")
-    kspAndroidTest("com.google.dagger:hilt-compiler:2.54")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.58")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.58")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
