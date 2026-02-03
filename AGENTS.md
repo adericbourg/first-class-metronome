@@ -4,6 +4,12 @@
 
 Android metronome application built with modern Android development practices.
 
+## Specifications
+
+- Stored in `/specs` folder
+- One folder per specification
+- Pattern `<ordering number with 4 digits>-<title>`
+
 ## Technology Stack
 
 - **Language**: Kotlin
@@ -115,8 +121,6 @@ Button(
 
 - Pre-generate click sounds to avoid runtime allocation
 - Use appropriate sample rate (44100 Hz standard)
-- Support different time signatures (4/4, 3/4, 6/8, etc.)
-- Distinguish downbeat from other beats (different pitch/sound)
 
 ## Dependencies
 
