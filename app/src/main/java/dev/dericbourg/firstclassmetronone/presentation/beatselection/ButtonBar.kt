@@ -30,6 +30,7 @@ fun ButtonBar(
     currentBpm: Int,
     isPlaying: Boolean,
     onPlayToggle: () -> Unit,
+    onTapTempo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -43,7 +44,8 @@ fun ButtonBar(
         ActionButtons(
             currentBpm = currentBpm,
             isPlaying = isPlaying,
-            onPlayToggle = onPlayToggle
+            onPlayToggle = onPlayToggle,
+            onTapTempo = onTapTempo
         )
     }
 }
@@ -78,6 +80,7 @@ private fun ActionButtons(
     currentBpm: Int,
     isPlaying: Boolean,
     onPlayToggle: () -> Unit,
+    onTapTempo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val playButtonDescription = if (isPlaying) "Stop metronome" else "Start metronome"
@@ -96,7 +99,7 @@ private fun ActionButtons(
             horizontalArrangement = Arrangement.spacedBy(BUTTON_SPACING)
         ) {
             IconButton(
-                onClick = { },
+                onClick = onTapTempo,
                 modifier = Modifier
                     .sizeIn(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
                     .semantics { contentDescription = "Tap tempo" }

@@ -5,6 +5,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -123,5 +125,170 @@ class BeatSelectionViewModelTest {
         viewModel.play()
 
         verify { metronomePlayer.start(120) }
+    }
+
+    // Tap Tempo Tests
+
+    @Test
+    fun tapTempoInitialState_isNotVisible() {
+        assertFalse(viewModel.tapTempoState.value.isVisible)
+    }
+
+    @Test
+    fun openTapTempo_makesOverlayVisible() {
+        viewModel.openTapTempo()
+
+        assertTrue(viewModel.tapTempoState.value.isVisible)
+    }
+
+    @Test
+    fun openTapTempo_whenPlaying_stopsMetronome() {
+        viewModel.play()
+
+        viewModel.openTapTempo()
+
+        assertFalse(viewModel.state.value.isPlaying)
+        verify { metronomePlayer.stop() }
+    }
+
+    @Test
+    fun openTapTempo_whenPlaying_remembersWasPlaying() {
+        viewModel.play()
+
+        viewModel.openTapTempo()
+
+        assertTrue(viewModel.tapTempoState.value.wasPlayingBeforeOpen)
+    }
+
+    @Test
+    fun openTapTempo_whenNotPlaying_remembersWasNotPlaying() {
+        viewModel.openTapTempo()
+
+        assertFalse(viewModel.tapTempoState.value.wasPlayingBeforeOpen)
+    }
+
+    @Test
+    fun closeTapTempo_hidesOverlay() {
+        viewModel.openTapTempo()
+
+        viewModel.closeTapTempo()
+
+        assertFalse(viewModel.tapTempoState.value.isVisible)
+    }
+
+    @Test
+    fun closeTapTempo_whenWasPlaying_resumesPlayback() {
+        viewModel.play()
+        viewModel.openTapTempo()
+
+        viewModel.closeTapTempo()
+
+        assertTrue(viewModel.state.value.isPlaying)
+    }
+
+    @Test
+    fun closeTapTempo_whenWasNotPlaying_doesNotResumePlayback() {
+        viewModel.openTapTempo()
+
+        viewModel.closeTapTempo()
+
+        assertFalse(viewModel.state.value.isPlaying)
+    }
+
+    @Test
+    fun recordTap_firstTap_storesTimestamp() {
+        viewModel.openTapTempo()
+
+        viewModel.recordTap()
+
+        assertEquals(1, viewModel.tapTempoState.value.tapTimestamps.size)
+    }
+
+    @Test
+    fun recordTap_multipleTaps_storesAllTimestamps() {
+        viewModel.openTapTempo()
+
+        viewModel.recordTap()
+        viewModel.recordTap()
+        viewModel.recordTap()
+
+        assertEquals(3, viewModel.tapTempoState.value.tapTimestamps.size)
+    }
+
+    @Test
+    fun recordTap_withTwoTaps_calculatesBpm() {
+        viewModel.openTapTempo()
+
+        viewModel.recordTap()
+        viewModel.recordTap()
+
+        assertNotNull(viewModel.tapTempoState.value.calculatedBpm)
+    }
+
+    @Test
+    fun recordTap_withOneTap_doesNotCalculateBpm() {
+        viewModel.openTapTempo()
+
+        viewModel.recordTap()
+
+        assertNull(viewModel.tapTempoState.value.calculatedBpm)
+    }
+
+    @Test
+    fun applyTappedBpm_updatesBeatSelectionBpm() {
+        viewModel.openTapTempo()
+        viewModel.recordTap()
+        viewModel.recordTap()
+        val calculatedBpm = viewModel.tapTempoState.value.calculatedBpm!!
+
+        viewModel.applyTappedBpm()
+
+        assertEquals(calculatedBpm, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun applyTappedBpm_closesOverlay() {
+        viewModel.openTapTempo()
+        viewModel.recordTap()
+        viewModel.recordTap()
+
+        viewModel.applyTappedBpm()
+
+        assertFalse(viewModel.tapTempoState.value.isVisible)
+    }
+
+    @Test
+    fun applyTappedBpm_whenWasPlaying_resumesAtNewBpm() {
+        viewModel.play()
+        viewModel.openTapTempo()
+        viewModel.recordTap()
+        viewModel.recordTap()
+        val calculatedBpm = viewModel.tapTempoState.value.calculatedBpm!!
+
+        viewModel.applyTappedBpm()
+
+        assertTrue(viewModel.state.value.isPlaying)
+        verify { metronomePlayer.start(calculatedBpm) }
+    }
+
+    @Test
+    fun applyTappedBpm_whenWasNotPlaying_doesNotResumePlayback() {
+        viewModel.openTapTempo()
+        viewModel.recordTap()
+        viewModel.recordTap()
+
+        viewModel.applyTappedBpm()
+
+        assertFalse(viewModel.state.value.isPlaying)
+    }
+
+    @Test
+    fun applyTappedBpm_withNoBpm_doesNothing() {
+        viewModel.openTapTempo()
+
+        viewModel.applyTappedBpm()
+
+        assertEquals(BeatSelectionState.DEFAULT_BPM, viewModel.state.value.selectedBpm)
+        assertTrue(viewModel.tapTempoState.value.isVisible)
     }
 }

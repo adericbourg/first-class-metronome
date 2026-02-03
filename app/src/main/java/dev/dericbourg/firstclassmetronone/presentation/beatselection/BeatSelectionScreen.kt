@@ -21,6 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoOverlay
+import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoState
 
 @Composable
 fun BeatSelectionScreen(
@@ -28,6 +30,7 @@ fun BeatSelectionScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
+    val tapTempoState by viewModel.tapTempoState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -44,8 +47,13 @@ fun BeatSelectionScreen(
 
     BeatSelectionContent(
         state = state,
+        tapTempoState = tapTempoState,
         onBpmSelected = viewModel::selectBpm,
         onPlayToggle = viewModel::togglePlayback,
+        onTapTempo = viewModel::openTapTempo,
+        onTap = viewModel::recordTap,
+        onApplyTappedBpm = viewModel::applyTappedBpm,
+        onCancelTapTempo = viewModel::closeTapTempo,
         modifier = modifier
     )
 }
@@ -53,8 +61,13 @@ fun BeatSelectionScreen(
 @Composable
 fun BeatSelectionContent(
     state: BeatSelectionState,
+    tapTempoState: TapTempoState,
     onBpmSelected: (Int) -> Unit,
     onPlayToggle: () -> Unit,
+    onTapTempo: () -> Unit,
+    onTap: () -> Unit,
+    onApplyTappedBpm: () -> Unit,
+    onCancelTapTempo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -91,7 +104,17 @@ fun BeatSelectionContent(
         ButtonBar(
             currentBpm = state.selectedBpm,
             isPlaying = state.isPlaying,
-            onPlayToggle = onPlayToggle
+            onPlayToggle = onPlayToggle,
+            onTapTempo = onTapTempo
+        )
+    }
+
+    if (tapTempoState.isVisible) {
+        TapTempoOverlay(
+            state = tapTempoState,
+            onTap = onTap,
+            onApply = onApplyTappedBpm,
+            onCancel = onCancelTapTempo
         )
     }
 }
