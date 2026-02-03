@@ -2,7 +2,8 @@ package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
 data class BeatSelectionState(
     val selectedBpm: Int = DEFAULT_BPM,
-    val availableBpmValues: List<Int> = BPM_VALUES
+    val availableBpmValues: List<Int> = BPM_VALUES,
+    val isPlaying: Boolean = false
 ) {
     companion object {
         const val DEFAULT_BPM = 60

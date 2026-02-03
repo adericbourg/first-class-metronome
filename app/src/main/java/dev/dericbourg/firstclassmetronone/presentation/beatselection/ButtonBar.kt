@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +28,8 @@ private val BUTTON_SPACING = 8.dp
 @Composable
 fun ButtonBar(
     currentBpm: Int,
+    isPlaying: Boolean,
+    onPlayToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -37,7 +40,11 @@ fun ButtonBar(
         verticalAlignment = Alignment.Bottom
     ) {
         AdjustmentButtons()
-        ActionButtons(currentBpm = currentBpm)
+        ActionButtons(
+            currentBpm = currentBpm,
+            isPlaying = isPlaying,
+            onPlayToggle = onPlayToggle
+        )
     }
 }
 
@@ -69,8 +76,13 @@ private fun AdjustmentButtons(modifier: Modifier = Modifier) {
 @Composable
 private fun ActionButtons(
     currentBpm: Int,
+    isPlaying: Boolean,
+    onPlayToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val playButtonDescription = if (isPlaying) "Stop metronome" else "Start metronome"
+    val playButtonIcon = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End
@@ -95,13 +107,13 @@ private fun ActionButtons(
                 )
             }
             IconButton(
-                onClick = { },
+                onClick = onPlayToggle,
                 modifier = Modifier
                     .sizeIn(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
-                    .semantics { contentDescription = "Start metronome" }
+                    .semantics { contentDescription = playButtonDescription }
             ) {
                 Icon(
-                    imageVector = Icons.Default.PlayArrow,
+                    imageVector = playButtonIcon,
                     contentDescription = null
                 )
             }

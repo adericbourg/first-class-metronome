@@ -32,7 +32,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -46,7 +47,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -60,7 +62,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -76,7 +79,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = { selectedBpm = it }
+                    onBpmSelected = { selectedBpm = it },
+                    onPlayToggle = {}
                 )
             }
         }
@@ -92,7 +96,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(selectedBpm = 90),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -106,7 +111,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -120,7 +126,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -134,7 +141,8 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -143,12 +151,13 @@ class BeatSelectionScreenTest {
     }
 
     @Test
-    fun buttonBar_playButton_hasContentDescription() {
+    fun buttonBar_whenNotPlaying_showsStartMetronome() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
-                    state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    state = BeatSelectionState(isPlaying = false),
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }
@@ -157,12 +166,47 @@ class BeatSelectionScreenTest {
     }
 
     @Test
+    fun buttonBar_whenPlaying_showsStopMetronome() {
+        composeTestRule.setContent {
+            FirstClassMetronomeTheme {
+                BeatSelectionContent(
+                    state = BeatSelectionState(isPlaying = true),
+                    onBpmSelected = {},
+                    onPlayToggle = {}
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithContentDescription("Stop metronome").assertIsDisplayed()
+    }
+
+    @Test
+    fun playButton_callsOnPlayToggle() {
+        var playToggleCalled = false
+
+        composeTestRule.setContent {
+            FirstClassMetronomeTheme {
+                BeatSelectionContent(
+                    state = BeatSelectionState(),
+                    onBpmSelected = {},
+                    onPlayToggle = { playToggleCalled = true }
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithContentDescription("Start metronome").performClick()
+
+        assert(playToggleCalled) { "Expected onPlayToggle to be called" }
+    }
+
+    @Test
     fun allBpmValues_areDisplayed() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
-                    onBpmSelected = {}
+                    onBpmSelected = {},
+                    onPlayToggle = {}
                 )
             }
         }

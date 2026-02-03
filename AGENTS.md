@@ -9,6 +9,7 @@ Android metronome application built with modern Android development practices.
 - Stored in `/specs` folder
 - One folder per specification
 - Pattern `<ordering number with 4 digits>-<title>`
+- Ask me for every feature decision you have to make
 
 ## Technology Stack
 
