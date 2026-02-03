@@ -49,6 +49,8 @@ fun BeatSelectionScreen(
         state = state,
         tapTempoState = tapTempoState,
         onBpmSelected = viewModel::selectBpm,
+        onDecreaseBpm = viewModel::decreaseBpm,
+        onIncreaseBpm = viewModel::increaseBpm,
         onPlayToggle = viewModel::togglePlayback,
         onTapTempo = viewModel::openTapTempo,
         onTap = viewModel::recordTap,
@@ -63,6 +65,8 @@ fun BeatSelectionContent(
     state: BeatSelectionState,
     tapTempoState: TapTempoState,
     onBpmSelected: (Int) -> Unit,
+    onDecreaseBpm: () -> Unit,
+    onIncreaseBpm: () -> Unit,
     onPlayToggle: () -> Unit,
     onTapTempo: () -> Unit,
     onTap: () -> Unit,
@@ -103,7 +107,12 @@ fun BeatSelectionContent(
 
         ButtonBar(
             currentBpm = state.selectedBpm,
+            isOnGrid = state.isOnGrid,
             isPlaying = state.isPlaying,
+            canDecreaseBpm = state.canDecreaseBpm,
+            canIncreaseBpm = state.canIncreaseBpm,
+            onDecreaseBpm = onDecreaseBpm,
+            onIncreaseBpm = onIncreaseBpm,
             onPlayToggle = onPlayToggle,
             onTapTempo = onTapTempo
         )

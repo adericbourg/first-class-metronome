@@ -291,4 +291,116 @@ class BeatSelectionViewModelTest {
         assertEquals(BeatSelectionState.DEFAULT_BPM, viewModel.state.value.selectedBpm)
         assertTrue(viewModel.tapTempoState.value.isVisible)
     }
+
+    // Tempo Shift Tests
+
+    @Test
+    fun decreaseBpm_decreasesByShiftAmount() {
+        viewModel.decreaseBpm()
+
+        assertEquals(BeatSelectionState.DEFAULT_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun increaseBpm_increasesByShiftAmount() {
+        viewModel.increaseBpm()
+
+        assertEquals(BeatSelectionState.DEFAULT_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun decreaseBpm_atMinimum_clampsToMinimum() {
+        repeat(20) { viewModel.decreaseBpm() }
+
+        assertEquals(BeatSelectionState.MIN_BPM, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun increaseBpm_atMaximum_clampsToMaximum() {
+        repeat(60) { viewModel.increaseBpm() }
+
+        assertEquals(BeatSelectionState.MAX_BPM, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun decreaseBpm_whenPlaying_updatesMetronome() {
+        viewModel.play()
+
+        viewModel.decreaseBpm()
+
+        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT) }
+    }
+
+    @Test
+    fun increaseBpm_whenPlaying_updatesMetronome() {
+        viewModel.play()
+
+        viewModel.increaseBpm()
+
+        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT) }
+    }
+
+    @Test
+    fun decreaseBpm_whenNotPlaying_doesNotStartMetronome() {
+        viewModel.decreaseBpm()
+
+        assertFalse(viewModel.state.value.isPlaying)
+    }
+
+    @Test
+    fun increaseBpm_whenNotPlaying_doesNotStartMetronome() {
+        viewModel.increaseBpm()
+
+        assertFalse(viewModel.state.value.isPlaying)
+    }
+
+    @Test
+    fun isOnGrid_whenBpmInGrid_returnsTrue() {
+        assertTrue(viewModel.state.value.isOnGrid)
+    }
+
+    @Test
+    fun isOnGrid_whenBpmOffGrid_returnsFalse() {
+        viewModel.selectBpm(100)
+        viewModel.increaseBpm()
+
+        assertFalse(viewModel.state.value.isOnGrid)
+    }
+
+    @Test
+    fun canDecreaseBpm_atDefault_returnsTrue() {
+        assertTrue(viewModel.state.value.canDecreaseBpm)
+    }
+
+    @Test
+    fun canDecreaseBpm_nearMinimum_returnsFalse() {
+        repeat(10) { viewModel.decreaseBpm() }
+
+        assertFalse(viewModel.state.value.canDecreaseBpm)
+    }
+
+    @Test
+    fun canIncreaseBpm_atDefault_returnsTrue() {
+        assertTrue(viewModel.state.value.canIncreaseBpm)
+    }
+
+    @Test
+    fun canIncreaseBpm_nearMaximum_returnsFalse() {
+        repeat(50) { viewModel.increaseBpm() }
+
+        assertFalse(viewModel.state.value.canIncreaseBpm)
+    }
+
+    @Test
+    fun selectBpm_afterShift_snapsToGrid() {
+        viewModel.selectBpm(100)
+        viewModel.increaseBpm()
+        assertFalse(viewModel.state.value.isOnGrid)
+        assertEquals(105, viewModel.state.value.selectedBpm)
+
+        viewModel.selectBpm(110)
+
+        assertTrue(viewModel.state.value.isOnGrid)
+        assertEquals(110, viewModel.state.value.selectedBpm)
+    }
 }

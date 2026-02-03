@@ -32,6 +32,25 @@ class BeatSelectionViewModel @Inject constructor(
         }
     }
 
+    fun decreaseBpm() {
+        val newBpm = (_state.value.selectedBpm - BeatSelectionState.BPM_SHIFT_AMOUNT)
+            .coerceAtLeast(BeatSelectionState.MIN_BPM)
+        setBpm(newBpm)
+    }
+
+    fun increaseBpm() {
+        val newBpm = (_state.value.selectedBpm + BeatSelectionState.BPM_SHIFT_AMOUNT)
+            .coerceAtMost(BeatSelectionState.MAX_BPM)
+        setBpm(newBpm)
+    }
+
+    private fun setBpm(bpm: Int) {
+        _state.update { it.copy(selectedBpm = bpm) }
+        if (_state.value.isPlaying) {
+            metronomePlayer.updateBpm(bpm)
+        }
+    }
+
     fun togglePlayback() {
         val currentState = _state.value
         if (currentState.isPlaying) {
