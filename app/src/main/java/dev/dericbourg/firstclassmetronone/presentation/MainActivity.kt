@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import dev.dericbourg.firstclassmetronone.presentation.beatselection.BeatSelectionScreen
 import dev.dericbourg.firstclassmetronone.presentation.navigation.AppScreen
+import dev.dericbourg.firstclassmetronone.presentation.settings.SettingsScreen
 import dev.dericbourg.firstclassmetronone.presentation.theme.FirstClassMetronomeTheme
 import dev.dericbourg.firstclassmetronone.presentation.worklog.WorkLogScreen
 
@@ -36,9 +37,13 @@ class MainActivity : ComponentActivity() {
                 ) {
                     when (currentScreen) {
                         AppScreen.BeatSelection -> BeatSelectionScreen(
-                            onNavigateToWorkLog = { currentScreen = AppScreen.WorkLog }
+                            onNavigateToWorkLog = { currentScreen = AppScreen.WorkLog },
+                            onNavigateToSettings = { currentScreen = AppScreen.Settings }
                         )
                         AppScreen.WorkLog -> WorkLogScreen(
+                            onNavigateBack = { currentScreen = AppScreen.BeatSelection }
+                        )
+                        AppScreen.Settings -> SettingsScreen(
                             onNavigateBack = { currentScreen = AppScreen.BeatSelection }
                         )
                     }

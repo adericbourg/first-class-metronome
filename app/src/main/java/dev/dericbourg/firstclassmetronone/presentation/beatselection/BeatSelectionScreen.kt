@@ -41,6 +41,7 @@ import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoState
 @Composable
 fun BeatSelectionScreen(
     onNavigateToWorkLog: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: BeatSelectionViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -74,6 +75,7 @@ fun BeatSelectionScreen(
         onApplyTappedBpm = viewModel::applyTappedBpm,
         onCancelTapTempo = viewModel::closeTapTempo,
         onNavigateToWorkLog = onNavigateToWorkLog,
+        onNavigateToSettings = onNavigateToSettings,
         modifier = modifier
     )
 }
@@ -91,6 +93,7 @@ fun BeatSelectionContent(
     onApplyTappedBpm: () -> Unit,
     onCancelTapTempo: () -> Unit,
     onNavigateToWorkLog: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -133,6 +136,13 @@ fun BeatSelectionContent(
                             onNavigateToWorkLog()
                         }
                     )
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToSettings()
+                        }
+                    )
                 }
             }
         }
@@ -159,6 +169,7 @@ fun BeatSelectionContent(
             isPlaying = state.isPlaying,
             canDecreaseBpm = state.canDecreaseBpm,
             canIncreaseBpm = state.canIncreaseBpm,
+            bpmIncrement = state.bpmIncrement,
             onDecreaseBpm = onDecreaseBpm,
             onIncreaseBpm = onIncreaseBpm,
             onPlayToggle = onPlayToggle,

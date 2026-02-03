@@ -8,4 +8,6 @@ sealed class AppScreen : Parcelable {
     data object BeatSelection : AppScreen()
     @Parcelize
     data object WorkLog : AppScreen()
+    @Parcelize
+    data object Settings : AppScreen()
 }

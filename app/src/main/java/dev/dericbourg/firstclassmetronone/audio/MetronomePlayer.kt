@@ -4,9 +4,14 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.dericbourg.firstclassmetronone.R
+import dev.dericbourg.firstclassmetronone.data.settings.SettingsRepository
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -15,10 +20,13 @@ import javax.inject.Singleton
 
 @Singleton
 class MetronomePlayer @Inject constructor(
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val vibrator: Vibrator,
+    private val settingsRepository: SettingsRepository
 ) {
     private val isPlaying = AtomicBoolean(false)
     private val currentBpm = AtomicInteger(60)
+    private val hapticEnabled = AtomicBoolean(false)
     private var playbackThread: Thread? = null
     private var clickSamples: ShortArray? = null
 
@@ -57,6 +65,9 @@ class MetronomePlayer @Inject constructor(
             Log.e(TAG, "Cannot start: click sound not loaded")
             return
         }
+
+        val settings = runBlocking { settingsRepository.settings.first() }
+        hapticEnabled.set(settings.hapticFeedbackEnabled && vibrator.hasVibrator())
 
         isPlaying.set(true)
 
@@ -121,6 +132,11 @@ class MetronomePlayer @Inject constructor(
                 // Write click sound
                 audioTrack.write(clickSamples, 0, clickSamples.size)
 
+                // Trigger haptic feedback if enabled
+                if (hapticEnabled.get()) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(HAPTIC_DURATION_MS, VibrationEffect.DEFAULT_AMPLITUDE))
+                }
+
                 // Write silence for the remainder of the beat
                 if (silenceSamples > 0 && isPlaying.get()) {
                     val silence = ShortArray(minOf(silenceSamples, SILENCE_CHUNK_SIZE))
@@ -145,5 +161,6 @@ class MetronomePlayer @Inject constructor(
         private const val WAV_HEADER_SIZE = 44
         private const val THREAD_JOIN_TIMEOUT_MS = 1000L
         private const val SILENCE_CHUNK_SIZE = 4410 // ~100ms chunks for responsive stopping
+        private const val HAPTIC_DURATION_MS = 20L
     }
 }

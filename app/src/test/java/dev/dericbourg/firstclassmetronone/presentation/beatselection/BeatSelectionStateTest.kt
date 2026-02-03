@@ -1,10 +1,14 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
+import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BeatSelectionStateTest {
+
+    private val defaultBpmIncrement = AppSettings.DEFAULT_BPM_INCREMENT
 
     @Test
     fun isOnGrid_whenBpmInGridValues_returnsTrue() {
@@ -56,15 +60,15 @@ class BeatSelectionStateTest {
     }
 
     @Test
-    fun canDecreaseBpm_atMinPlusShift_returnsTrue() {
-        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MIN_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT)
+    fun canDecreaseBpm_atMinPlusIncrement_returnsTrue() {
+        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MIN_BPM + defaultBpmIncrement)
 
         assertTrue(state.canDecreaseBpm)
     }
 
     @Test
-    fun canDecreaseBpm_belowMinPlusShift_returnsFalse() {
-        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MIN_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT - 1)
+    fun canDecreaseBpm_belowMinPlusIncrement_returnsFalse() {
+        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MIN_BPM + defaultBpmIncrement - 1)
 
         assertFalse(state.canDecreaseBpm)
     }
@@ -84,15 +88,15 @@ class BeatSelectionStateTest {
     }
 
     @Test
-    fun canIncreaseBpm_atMaxMinusShift_returnsTrue() {
-        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MAX_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT)
+    fun canIncreaseBpm_atMaxMinusIncrement_returnsTrue() {
+        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MAX_BPM - defaultBpmIncrement)
 
         assertTrue(state.canIncreaseBpm)
     }
 
     @Test
-    fun canIncreaseBpm_aboveMaxMinusShift_returnsFalse() {
-        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MAX_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT + 1)
+    fun canIncreaseBpm_aboveMaxMinusIncrement_returnsFalse() {
+        val state = BeatSelectionState(selectedBpm = BeatSelectionState.MAX_BPM - defaultBpmIncrement + 1)
 
         assertFalse(state.canIncreaseBpm)
     }
@@ -106,8 +110,34 @@ class BeatSelectionStateTest {
 
     @Test
     fun constants_haveExpectedValues() {
-        assertTrue(BeatSelectionState.MIN_BPM == 20)
-        assertTrue(BeatSelectionState.MAX_BPM == 300)
-        assertTrue(BeatSelectionState.BPM_SHIFT_AMOUNT == 5)
+        assertEquals(20, BeatSelectionState.MIN_BPM)
+        assertEquals(300, BeatSelectionState.MAX_BPM)
+    }
+
+    @Test
+    fun bpmIncrement_defaultsToSettingsDefault() {
+        val state = BeatSelectionState()
+
+        assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, state.bpmIncrement)
+    }
+
+    @Test
+    fun canDecreaseBpm_usesCustomIncrement() {
+        val state = BeatSelectionState(selectedBpm = 30, bpmIncrement = 10)
+
+        assertTrue(state.canDecreaseBpm)
+
+        val stateAtMinWithCustomIncrement = BeatSelectionState(selectedBpm = 29, bpmIncrement = 10)
+        assertFalse(stateAtMinWithCustomIncrement.canDecreaseBpm)
+    }
+
+    @Test
+    fun canIncreaseBpm_usesCustomIncrement() {
+        val state = BeatSelectionState(selectedBpm = 290, bpmIncrement = 10)
+
+        assertTrue(state.canIncreaseBpm)
+
+        val stateNearMaxWithCustomIncrement = BeatSelectionState(selectedBpm = 291, bpmIncrement = 10)
+        assertFalse(stateNearMaxWithCustomIncrement.canIncreaseBpm)
     }
 }

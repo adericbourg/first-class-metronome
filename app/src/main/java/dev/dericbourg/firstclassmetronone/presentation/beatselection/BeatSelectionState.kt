@@ -1,25 +1,27 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
+import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+
 data class BeatSelectionState(
     val selectedBpm: Int = DEFAULT_BPM,
     val availableBpmValues: List<Int> = BPM_VALUES,
-    val isPlaying: Boolean = false
+    val isPlaying: Boolean = false,
+    val bpmIncrement: Int = AppSettings.DEFAULT_BPM_INCREMENT
 ) {
     val isOnGrid: Boolean
         get() = selectedBpm in availableBpmValues
 
     val canDecreaseBpm: Boolean
-        get() = selectedBpm - BPM_SHIFT_AMOUNT >= MIN_BPM
+        get() = selectedBpm - bpmIncrement >= MIN_BPM
 
     val canIncreaseBpm: Boolean
-        get() = selectedBpm + BPM_SHIFT_AMOUNT <= MAX_BPM
+        get() = selectedBpm + bpmIncrement <= MAX_BPM
 
     companion object {
         const val DEFAULT_BPM = 60
         const val GRID_COLUMNS = 4
         const val MIN_BPM = 20
         const val MAX_BPM = 300
-        const val BPM_SHIFT_AMOUNT = 5
 
         val BPM_VALUES = listOf(
             30, 35, 40, 45,

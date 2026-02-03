@@ -2,9 +2,19 @@ package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
 import dev.dericbourg.firstclassmetronone.audio.MetronomePlayer
 import dev.dericbourg.firstclassmetronone.data.repository.PracticeRepository
+import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+import dev.dericbourg.firstclassmetronone.data.settings.SettingsRepository
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -13,17 +23,32 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BeatSelectionViewModelTest {
 
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var metronomePlayer: MetronomePlayer
     private lateinit var practiceRepository: PracticeRepository
+    private lateinit var settingsRepository: SettingsRepository
+    private lateinit var settingsFlow: MutableStateFlow<AppSettings>
     private lateinit var viewModel: BeatSelectionViewModel
 
     @Before
     fun setup() {
+        Dispatchers.setMain(testDispatcher)
+
         metronomePlayer = mockk(relaxed = true)
         practiceRepository = mockk(relaxed = true)
-        viewModel = BeatSelectionViewModel(metronomePlayer, practiceRepository)
+        settingsFlow = MutableStateFlow(AppSettings())
+        settingsRepository = mockk(relaxed = true) {
+            every { settings } returns settingsFlow
+        }
+        viewModel = BeatSelectionViewModel(metronomePlayer, practiceRepository, settingsRepository)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
@@ -314,17 +339,21 @@ class BeatSelectionViewModelTest {
     // Tempo Shift Tests
 
     @Test
-    fun decreaseBpm_decreasesByShiftAmount() {
+    fun decreaseBpm_decreasesByBpmIncrement() {
+        val bpmIncrement = viewModel.state.value.bpmIncrement
+
         viewModel.decreaseBpm()
 
-        assertEquals(BeatSelectionState.DEFAULT_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT, viewModel.state.value.selectedBpm)
+        assertEquals(BeatSelectionState.DEFAULT_BPM - bpmIncrement, viewModel.state.value.selectedBpm)
     }
 
     @Test
-    fun increaseBpm_increasesByShiftAmount() {
+    fun increaseBpm_increasesByBpmIncrement() {
+        val bpmIncrement = viewModel.state.value.bpmIncrement
+
         viewModel.increaseBpm()
 
-        assertEquals(BeatSelectionState.DEFAULT_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT, viewModel.state.value.selectedBpm)
+        assertEquals(BeatSelectionState.DEFAULT_BPM + bpmIncrement, viewModel.state.value.selectedBpm)
     }
 
     @Test
@@ -343,20 +372,22 @@ class BeatSelectionViewModelTest {
 
     @Test
     fun decreaseBpm_whenPlaying_updatesMetronome() {
+        val bpmIncrement = viewModel.state.value.bpmIncrement
         viewModel.play()
 
         viewModel.decreaseBpm()
 
-        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM - BeatSelectionState.BPM_SHIFT_AMOUNT) }
+        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM - bpmIncrement) }
     }
 
     @Test
     fun increaseBpm_whenPlaying_updatesMetronome() {
+        val bpmIncrement = viewModel.state.value.bpmIncrement
         viewModel.play()
 
         viewModel.increaseBpm()
 
-        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM + BeatSelectionState.BPM_SHIFT_AMOUNT) }
+        verify { metronomePlayer.updateBpm(BeatSelectionState.DEFAULT_BPM + bpmIncrement) }
     }
 
     @Test
@@ -421,5 +452,32 @@ class BeatSelectionViewModelTest {
 
         assertTrue(viewModel.state.value.isOnGrid)
         assertEquals(110, viewModel.state.value.selectedBpm)
+    }
+
+    // Settings integration tests
+
+    @Test
+    fun bpmIncrement_updatesFromSettings() {
+        settingsFlow.value = AppSettings(bpmIncrement = 10)
+
+        assertEquals(10, viewModel.state.value.bpmIncrement)
+    }
+
+    @Test
+    fun increaseBpm_usesSettingsBpmIncrement() {
+        settingsFlow.value = AppSettings(bpmIncrement = 10)
+
+        viewModel.increaseBpm()
+
+        assertEquals(BeatSelectionState.DEFAULT_BPM + 10, viewModel.state.value.selectedBpm)
+    }
+
+    @Test
+    fun decreaseBpm_usesSettingsBpmIncrement() {
+        settingsFlow.value = AppSettings(bpmIncrement = 10)
+
+        viewModel.decreaseBpm()
+
+        assertEquals(BeatSelectionState.DEFAULT_BPM - 10, viewModel.state.value.selectedBpm)
     }
 }

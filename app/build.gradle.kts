@@ -76,6 +76,9 @@ dependencies {
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
 
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
     // Room
     val roomVersion = "2.7.1"
     implementation("androidx.room:room-runtime:$roomVersion")

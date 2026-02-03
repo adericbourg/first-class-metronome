@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.dericbourg.firstclassmetronone.audio.MetronomePlayer
 import dev.dericbourg.firstclassmetronone.data.repository.PracticeRepository
+import dev.dericbourg.firstclassmetronone.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BeatSelectionViewModel @Inject constructor(
     private val metronomePlayer: MetronomePlayer,
-    private val practiceRepository: PracticeRepository
+    private val practiceRepository: PracticeRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BeatSelectionState())
@@ -24,6 +26,14 @@ class BeatSelectionViewModel @Inject constructor(
 
     private val _tapTempoState = MutableStateFlow(TapTempoState())
     val tapTempoState: StateFlow<TapTempoState> = _tapTempoState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            settingsRepository.settings.collect { settings ->
+                _state.update { it.copy(bpmIncrement = settings.bpmIncrement) }
+            }
+        }
+    }
 
     fun selectBpm(bpm: Int) {
         if (bpm in _state.value.availableBpmValues) {
@@ -37,13 +47,15 @@ class BeatSelectionViewModel @Inject constructor(
     }
 
     fun decreaseBpm() {
-        val newBpm = (_state.value.selectedBpm - BeatSelectionState.BPM_SHIFT_AMOUNT)
+        val currentState = _state.value
+        val newBpm = (currentState.selectedBpm - currentState.bpmIncrement)
             .coerceAtLeast(BeatSelectionState.MIN_BPM)
         setBpm(newBpm)
     }
 
     fun increaseBpm() {
-        val newBpm = (_state.value.selectedBpm + BeatSelectionState.BPM_SHIFT_AMOUNT)
+        val currentState = _state.value
+        val newBpm = (currentState.selectedBpm + currentState.bpmIncrement)
             .coerceAtMost(BeatSelectionState.MAX_BPM)
         setBpm(newBpm)
     }

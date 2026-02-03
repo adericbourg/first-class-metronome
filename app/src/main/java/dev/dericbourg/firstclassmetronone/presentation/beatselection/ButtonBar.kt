@@ -37,6 +37,7 @@ fun ButtonBar(
     isPlaying: Boolean,
     canDecreaseBpm: Boolean,
     canIncreaseBpm: Boolean,
+    bpmIncrement: Int,
     onDecreaseBpm: () -> Unit,
     onIncreaseBpm: () -> Unit,
     onPlayToggle: () -> Unit,
@@ -51,6 +52,7 @@ fun ButtonBar(
         verticalAlignment = Alignment.Bottom
     ) {
         AdjustmentButtons(
+            bpmIncrement = bpmIncrement,
             canDecrease = canDecreaseBpm,
             canIncrease = canIncreaseBpm,
             onDecrease = onDecreaseBpm,
@@ -68,6 +70,7 @@ fun ButtonBar(
 
 @Composable
 private fun AdjustmentButtons(
+    bpmIncrement: Int,
     canDecrease: Boolean,
     canIncrease: Boolean,
     onDecrease: () -> Unit,
@@ -75,14 +78,14 @@ private fun AdjustmentButtons(
     modifier: Modifier = Modifier
 ) {
     val decreaseDescription = if (canDecrease) {
-        "Decrease tempo by 5"
+        "Decrease tempo by $bpmIncrement"
     } else {
-        "Decrease tempo by 5, minimum reached"
+        "Decrease tempo by $bpmIncrement, minimum reached"
     }
     val increaseDescription = if (canIncrease) {
-        "Increase tempo by 5"
+        "Increase tempo by $bpmIncrement"
     } else {
-        "Increase tempo by 5, maximum reached"
+        "Increase tempo by $bpmIncrement, maximum reached"
     }
 
     Row(
@@ -96,7 +99,7 @@ private fun AdjustmentButtons(
                 .sizeIn(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
                 .semantics { contentDescription = decreaseDescription }
         ) {
-            Text(text = "-5")
+            Text(text = "-$bpmIncrement")
         }
         OutlinedButton(
             onClick = onIncrease,
@@ -105,7 +108,7 @@ private fun AdjustmentButtons(
                 .sizeIn(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
                 .semantics { contentDescription = increaseDescription }
         ) {
-            Text(text = "+5")
+            Text(text = "+$bpmIncrement")
         }
     }
 }

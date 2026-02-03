@@ -6,10 +6,11 @@ Android metronome application built with modern Android development practices.
 
 ## Specifications
 
-- Stored in `/specs` folder
-- One folder per specification
-- Pattern `<ordering number with 4 digits>-<title>`
-- Ask me for every feature decision you have to make
+- Stored in `/specs` folder.
+- One folder per specification.
+- Pattern `<ordering number with 4 digits>-<title>`.
+- Ask me for every feature decision you have to make.
+- Always consider adding settings for a new feature.
 
 ## Technology Stack
 
