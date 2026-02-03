@@ -1,6 +1,8 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,10 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -38,6 +43,7 @@ fun ButtonBar(
     canDecreaseBpm: Boolean,
     canIncreaseBpm: Boolean,
     bpmIncrement: Int,
+    isHapticEnabled: Boolean,
     onDecreaseBpm: () -> Unit,
     onIncreaseBpm: () -> Unit,
     onPlayToggle: () -> Unit,
@@ -62,6 +68,7 @@ fun ButtonBar(
             currentBpm = currentBpm,
             isOnGrid = isOnGrid,
             isPlaying = isPlaying,
+            isHapticEnabled = isHapticEnabled,
             onPlayToggle = onPlayToggle,
             onTapTempo = onTapTempo
         )
@@ -118,6 +125,7 @@ private fun ActionButtons(
     currentBpm: Int,
     isOnGrid: Boolean,
     isPlaying: Boolean,
+    isHapticEnabled: Boolean,
     onPlayToggle: () -> Unit,
     onTapTempo: () -> Unit,
     modifier: Modifier = Modifier
@@ -132,10 +140,13 @@ private fun ActionButtons(
         TempoDisplay(
             bpm = currentBpm,
             isOnGrid = isOnGrid,
+            isHapticEnabled = isHapticEnabled,
+            isPlaying = isPlaying,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         Row(
-            horizontalArrangement = Arrangement.spacedBy(BUTTON_SPACING)
+            horizontalArrangement = Arrangement.spacedBy(BUTTON_SPACING),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = onTapTempo,
@@ -167,6 +178,8 @@ private fun ActionButtons(
 private fun TempoDisplay(
     bpm: Int,
     isOnGrid: Boolean,
+    isHapticEnabled: Boolean,
+    isPlaying: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -191,6 +204,43 @@ private fun TempoDisplay(
             } else {
                 MaterialTheme.colorScheme.secondary
             }
+        )
+        if (isHapticEnabled) {
+            Spacer(modifier = Modifier.width(6.dp))
+            HapticIndicator(isPlaying = isPlaying)
+        }
+    }
+}
+
+@Composable
+private fun HapticIndicator(
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isPlaying) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val iconColor = if (isPlaying) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .padding(4.dp)
+            .semantics { contentDescription = "Haptic feedback enabled" },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Vibration,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = iconColor
         )
     }
 }

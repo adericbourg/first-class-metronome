@@ -1,5 +1,10 @@
 package dev.dericbourg.firstclassmetronone.presentation.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -18,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -28,11 +36,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+import dev.dericbourg.firstclassmetronone.data.settings.HapticStrength
 
 private val MIN_TOUCH_TARGET = 48.dp
 
@@ -49,6 +59,7 @@ fun SettingsScreen(
         onNavigateBack = onNavigateBack,
         onBpmIncrementChange = viewModel::setBpmIncrement,
         onHapticFeedbackChange = viewModel::setHapticFeedback,
+        onHapticStrengthChange = viewModel::setHapticStrength,
         onResetClick = viewModel::showResetDialog,
         onConfirmReset = viewModel::confirmReset,
         onDismissDialog = viewModel::dismissDialog,
@@ -63,6 +74,7 @@ fun SettingsContent(
     onNavigateBack: () -> Unit,
     onBpmIncrementChange: (Int) -> Unit,
     onHapticFeedbackChange: (Boolean) -> Unit,
+    onHapticStrengthChange: (HapticStrength) -> Unit,
     onResetClick: () -> Unit,
     onConfirmReset: () -> Unit,
     onDismissDialog: () -> Unit,
@@ -102,7 +114,10 @@ fun SettingsContent(
 
                 HapticFeedbackSetting(
                     enabled = state.hapticFeedbackEnabled,
-                    onEnabledChange = onHapticFeedbackChange
+                    onEnabledChange = onHapticFeedbackChange,
+                    strength = state.hapticStrength,
+                    onStrengthChange = onHapticStrengthChange,
+                    showStrengthSelector = state.hasAmplitudeControl
                 )
             }
 
@@ -194,37 +209,108 @@ private fun BpmIncrementSetting(
 private fun HapticFeedbackSetting(
     enabled: Boolean,
     onEnabledChange: (Boolean) -> Unit,
+    strength: HapticStrength,
+    onStrengthChange: (HapticStrength) -> Unit,
+    showStrengthSelector: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Haptic Feedback",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Vibrate on each beat",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Haptic Feedback",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Vibrate on each beat",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = enabled,
+                onCheckedChange = onEnabledChange,
+                modifier = Modifier.semantics {
+                    contentDescription = if (enabled) {
+                        "Haptic feedback enabled, tap to disable"
+                    } else {
+                        "Haptic feedback disabled, tap to enable"
+                    }
+                }
             )
         }
 
-        Switch(
-            checked = enabled,
-            onCheckedChange = onEnabledChange,
-            modifier = Modifier.semantics {
-                contentDescription = if (enabled) {
-                    "Haptic feedback enabled, tap to disable"
-                } else {
-                    "Haptic feedback disabled, tap to enable"
+        AnimatedVisibility(
+            visible = enabled && showStrengthSelector,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            HapticStrengthSelector(
+                selectedStrength = strength,
+                onStrengthChange = onStrengthChange,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun HapticStrengthSelector(
+    selectedStrength: HapticStrength,
+    onStrengthChange: (HapticStrength) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "Vibration strength",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            HapticStrength.entries.forEach { strength ->
+                val isSelected = strength == selectedStrength
+                val label = strength.name.lowercase().replaceFirstChar { it.uppercase() }
+
+                Row(
+                    modifier = Modifier
+                        .sizeIn(minHeight = MIN_TOUCH_TARGET)
+                        .selectable(
+                            selected = isSelected,
+                            onClick = { onStrengthChange(strength) },
+                            role = Role.RadioButton
+                        )
+                        .padding(horizontal = 8.dp)
+                        .semantics {
+                            contentDescription = "Vibration strength: $label" +
+                                if (isSelected) ", selected" else ""
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = isSelected,
+                        onClick = null
+                    )
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
                 }
             }
-        )
+        }
     }
 }
 

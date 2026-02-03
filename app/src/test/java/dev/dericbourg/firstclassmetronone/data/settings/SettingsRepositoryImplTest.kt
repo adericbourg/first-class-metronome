@@ -50,6 +50,7 @@ class SettingsRepositoryImplTest {
 
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, settings.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, settings.hapticFeedbackEnabled)
+        assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
     }
 
     @Test
@@ -97,11 +98,33 @@ class SettingsRepositoryImplTest {
     fun resetToDefaults_restoresDefaultValues() = runTest {
         repository.setBpmIncrement(15)
         repository.setHapticFeedbackEnabled(true)
+        repository.setHapticStrength(HapticStrength.STRONG)
 
         repository.resetToDefaults()
 
         val settings = repository.settings.first()
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, settings.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, settings.hapticFeedbackEnabled)
+        assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
+    }
+
+    @Test
+    fun setHapticStrength_updatesValue() = runTest {
+        repository.setHapticStrength(HapticStrength.STRONG)
+
+        val settings = repository.settings.first()
+        assertEquals(HapticStrength.STRONG, settings.hapticStrength)
+    }
+
+    @Test
+    fun setHapticStrength_canChangeToAnyLevel() = runTest {
+        repository.setHapticStrength(HapticStrength.LIGHT)
+        assertEquals(HapticStrength.LIGHT, repository.settings.first().hapticStrength)
+
+        repository.setHapticStrength(HapticStrength.MEDIUM)
+        assertEquals(HapticStrength.MEDIUM, repository.settings.first().hapticStrength)
+
+        repository.setHapticStrength(HapticStrength.STRONG)
+        assertEquals(HapticStrength.STRONG, repository.settings.first().hapticStrength)
     }
 }

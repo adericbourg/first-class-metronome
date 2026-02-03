@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+import dev.dericbourg.firstclassmetronone.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronone.data.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,14 +25,21 @@ class SettingsViewModel @Inject constructor(
 
     init {
         val isHapticSupported = vibrator.hasVibrator()
-        _state.update { it.copy(isHapticSupported = isHapticSupported) }
+        val hasAmplitudeControl = vibrator.hasAmplitudeControl()
+        _state.update {
+            it.copy(
+                isHapticSupported = isHapticSupported,
+                hasAmplitudeControl = hasAmplitudeControl
+            )
+        }
 
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
                 _state.update {
                     it.copy(
                         bpmIncrement = settings.bpmIncrement,
-                        hapticFeedbackEnabled = settings.hapticFeedbackEnabled
+                        hapticFeedbackEnabled = settings.hapticFeedbackEnabled,
+                        hapticStrength = settings.hapticStrength
                     )
                 }
             }
@@ -48,6 +56,12 @@ class SettingsViewModel @Inject constructor(
     fun setHapticFeedback(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setHapticFeedbackEnabled(enabled)
+        }
+    }
+
+    fun setHapticStrength(strength: HapticStrength) {
+        viewModelScope.launch {
+            settingsRepository.setHapticStrength(strength)
         }
     }
 

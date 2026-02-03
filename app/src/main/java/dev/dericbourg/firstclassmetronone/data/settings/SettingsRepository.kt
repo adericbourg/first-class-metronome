@@ -7,5 +7,6 @@ interface SettingsRepository {
 
     suspend fun setBpmIncrement(value: Int)
     suspend fun setHapticFeedbackEnabled(enabled: Boolean)
+    suspend fun setHapticStrength(strength: HapticStrength)
     suspend fun resetToDefaults()
 }

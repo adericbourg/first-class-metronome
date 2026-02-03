@@ -170,6 +170,7 @@ fun BeatSelectionContent(
             canDecreaseBpm = state.canDecreaseBpm,
             canIncreaseBpm = state.canIncreaseBpm,
             bpmIncrement = state.bpmIncrement,
+            isHapticEnabled = state.isHapticEnabled,
             onDecreaseBpm = onDecreaseBpm,
             onIncreaseBpm = onIncreaseBpm,
             onPlayToggle = onPlayToggle,

@@ -480,4 +480,24 @@ class BeatSelectionViewModelTest {
 
         assertEquals(BeatSelectionState.DEFAULT_BPM - 10, viewModel.state.value.selectedBpm)
     }
+
+    @Test
+    fun isHapticEnabled_initiallyFalse() {
+        assertFalse(viewModel.state.value.isHapticEnabled)
+    }
+
+    @Test
+    fun isHapticEnabled_updatesFromSettings() {
+        settingsFlow.value = AppSettings(hapticFeedbackEnabled = true)
+
+        assertTrue(viewModel.state.value.isHapticEnabled)
+    }
+
+    @Test
+    fun isHapticEnabled_canBeDisabled() {
+        settingsFlow.value = AppSettings(hapticFeedbackEnabled = true)
+        settingsFlow.value = AppSettings(hapticFeedbackEnabled = false)
+
+        assertFalse(viewModel.state.value.isHapticEnabled)
+    }
 }

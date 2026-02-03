@@ -2,6 +2,7 @@ package dev.dericbourg.firstclassmetronone.presentation.settings
 
 import android.os.Vibrator
 import dev.dericbourg.firstclassmetronone.data.settings.AppSettings
+import dev.dericbourg.firstclassmetronone.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronone.data.settings.SettingsRepository
 import io.mockk.coVerify
 import io.mockk.every
@@ -38,6 +39,7 @@ class SettingsViewModelTest {
         }
         vibrator = mockk(relaxed = true) {
             every { hasVibrator() } returns true
+            every { hasAmplitudeControl() } returns true
         }
 
         viewModel = SettingsViewModel(settingsRepository, vibrator)
@@ -52,6 +54,7 @@ class SettingsViewModelTest {
     fun initialState_hasDefaultValues() {
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, viewModel.state.value.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, viewModel.state.value.hapticFeedbackEnabled)
+        assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, viewModel.state.value.hapticStrength)
     }
 
     @Test
@@ -63,6 +66,7 @@ class SettingsViewModelTest {
     fun initialState_whenNoVibrator_hapticNotSupported() {
         val noVibratorDevice = mockk<Vibrator> {
             every { hasVibrator() } returns false
+            every { hasAmplitudeControl() } returns false
         }
         val vm = SettingsViewModel(settingsRepository, noVibratorDevice)
 
@@ -70,11 +74,33 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun initialState_checksAmplitudeControl() {
+        assertTrue(viewModel.state.value.hasAmplitudeControl)
+    }
+
+    @Test
+    fun initialState_whenNoAmplitudeControl_hasAmplitudeControlFalse() {
+        val noAmplitudeVibrator = mockk<Vibrator> {
+            every { hasVibrator() } returns true
+            every { hasAmplitudeControl() } returns false
+        }
+        val vm = SettingsViewModel(settingsRepository, noAmplitudeVibrator)
+
+        assertTrue(vm.state.value.isHapticSupported)
+        assertFalse(vm.state.value.hasAmplitudeControl)
+    }
+
+    @Test
     fun settingsFlow_updatesState() {
-        settingsFlow.value = AppSettings(bpmIncrement = 10, hapticFeedbackEnabled = true)
+        settingsFlow.value = AppSettings(
+            bpmIncrement = 10,
+            hapticFeedbackEnabled = true,
+            hapticStrength = HapticStrength.STRONG
+        )
 
         assertEquals(10, viewModel.state.value.bpmIncrement)
         assertTrue(viewModel.state.value.hapticFeedbackEnabled)
+        assertEquals(HapticStrength.STRONG, viewModel.state.value.hapticStrength)
     }
 
     @Test
@@ -103,6 +129,13 @@ class SettingsViewModelTest {
         viewModel.setHapticFeedback(true)
 
         coVerify { settingsRepository.setHapticFeedbackEnabled(true) }
+    }
+
+    @Test
+    fun setHapticStrength_callsRepository() {
+        viewModel.setHapticStrength(HapticStrength.STRONG)
+
+        coVerify { settingsRepository.setHapticStrength(HapticStrength.STRONG) }
     }
 
     @Test

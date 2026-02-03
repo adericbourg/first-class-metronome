@@ -30,7 +30,12 @@ class BeatSelectionViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
-                _state.update { it.copy(bpmIncrement = settings.bpmIncrement) }
+                _state.update {
+                    it.copy(
+                        bpmIncrement = settings.bpmIncrement,
+                        isHapticEnabled = settings.hapticFeedbackEnabled
+                    )
+                }
             }
         }
     }
