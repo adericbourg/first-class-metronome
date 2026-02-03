@@ -109,10 +109,11 @@ class BeatSelectionViewModelTest {
     }
 
     @Test
-    fun selectBpm_whenNotPlaying_doesNotUpdatePlayer() {
+    fun selectBpm_whenNotPlaying_startsPlayback() {
         viewModel.selectBpm(120)
 
-        verify(exactly = 0) { metronomePlayer.updateBpm(any()) }
+        assertTrue(viewModel.state.value.isPlaying)
+        verify { metronomePlayer.start(120) }
     }
 
     @Test

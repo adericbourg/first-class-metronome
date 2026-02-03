@@ -22,6 +22,8 @@ class BeatSelectionViewModel @Inject constructor(
             _state.update { it.copy(selectedBpm = bpm) }
             if (_state.value.isPlaying) {
                 metronomePlayer.updateBpm(bpm)
+            } else {
+                play()
             }
         }
     }
