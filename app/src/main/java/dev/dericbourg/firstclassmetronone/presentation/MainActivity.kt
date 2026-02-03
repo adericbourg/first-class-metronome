@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
+import dev.dericbourg.firstclassmetronone.presentation.beatselection.BeatSelectionScreen
 import dev.dericbourg.firstclassmetronone.presentation.theme.FirstClassMetronomeTheme
 
 @AndroidEntryPoint
@@ -19,10 +21,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             FirstClassMetronomeTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .safeDrawingPadding(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // App content will go here
+                    BeatSelectionScreen()
                 }
             }
         }
