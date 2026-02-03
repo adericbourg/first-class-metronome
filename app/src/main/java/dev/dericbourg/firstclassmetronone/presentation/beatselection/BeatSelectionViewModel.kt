@@ -1,18 +1,22 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.dericbourg.firstclassmetronone.audio.MetronomePlayer
+import dev.dericbourg.firstclassmetronone.data.repository.PracticeRepository
 import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class BeatSelectionViewModel @Inject constructor(
-    private val metronomePlayer: MetronomePlayer
+    private val metronomePlayer: MetronomePlayer,
+    private val practiceRepository: PracticeRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BeatSelectionState())
@@ -63,11 +67,17 @@ class BeatSelectionViewModel @Inject constructor(
     fun play() {
         metronomePlayer.start(_state.value.selectedBpm)
         _state.update { it.copy(isPlaying = true) }
+        viewModelScope.launch {
+            practiceRepository.recordStart()
+        }
     }
 
     fun stop() {
         metronomePlayer.stop()
         _state.update { it.copy(isPlaying = false) }
+        viewModelScope.launch {
+            practiceRepository.recordStop()
+        }
     }
 
     fun openTapTempo() {

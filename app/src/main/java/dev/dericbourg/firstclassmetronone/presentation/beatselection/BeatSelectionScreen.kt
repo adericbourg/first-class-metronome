@@ -2,19 +2,30 @@ package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
 import android.app.Activity
 import android.view.WindowManager
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +40,7 @@ import dev.dericbourg.firstclassmetronone.presentation.taptempo.TapTempoState
 
 @Composable
 fun BeatSelectionScreen(
+    onNavigateToWorkLog: () -> Unit,
     viewModel: BeatSelectionViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
@@ -61,6 +73,7 @@ fun BeatSelectionScreen(
         onTap = viewModel::recordTap,
         onApplyTappedBpm = viewModel::applyTappedBpm,
         onCancelTapTempo = viewModel::closeTapTempo,
+        onNavigateToWorkLog = onNavigateToWorkLog,
         modifier = modifier
     )
 }
@@ -77,22 +90,52 @@ fun BeatSelectionContent(
     onTap: () -> Unit,
     onApplyTappedBpm: () -> Unit,
     onCancelTapTempo: () -> Unit,
+    onNavigateToWorkLog: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "First Class Metronome",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        )
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "First Class Metronome",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f)
+            )
+            Box {
+                IconButton(
+                    onClick = { showMenu = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Open menu"
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Work log") },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToWorkLog()
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 

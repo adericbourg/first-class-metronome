@@ -61,6 +61,11 @@ app/
 - Use `Handler` with `Looper` or coroutines for scheduling
 - Consider `MediaPlayer` for simple sound playback, `AudioTrack` for low-latency
 
+### Database
+
+- (important) Consider all changes as a migration: there must be a way to migrate all data
+  incrementally from any version to any more recent version
+
 ## Testing
 
 ### Unit Tests

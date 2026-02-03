@@ -1,6 +1,8 @@
 package dev.dericbourg.firstclassmetronone.presentation.beatselection
 
 import dev.dericbourg.firstclassmetronone.audio.MetronomePlayer
+import dev.dericbourg.firstclassmetronone.data.repository.PracticeRepository
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
@@ -14,12 +16,14 @@ import org.junit.Test
 class BeatSelectionViewModelTest {
 
     private lateinit var metronomePlayer: MetronomePlayer
+    private lateinit var practiceRepository: PracticeRepository
     private lateinit var viewModel: BeatSelectionViewModel
 
     @Before
     fun setup() {
         metronomePlayer = mockk(relaxed = true)
-        viewModel = BeatSelectionViewModel(metronomePlayer)
+        practiceRepository = mockk(relaxed = true)
+        viewModel = BeatSelectionViewModel(metronomePlayer, practiceRepository)
     }
 
     @Test
@@ -76,12 +80,27 @@ class BeatSelectionViewModelTest {
     }
 
     @Test
+    fun play_recordsStartEvent() {
+        viewModel.play()
+
+        coVerify { practiceRepository.recordStart() }
+    }
+
+    @Test
     fun stop_stopsMetronome() {
         viewModel.play()
         viewModel.stop()
 
         assertFalse(viewModel.state.value.isPlaying)
         verify { metronomePlayer.stop() }
+    }
+
+    @Test
+    fun stop_recordsStopEvent() {
+        viewModel.play()
+        viewModel.stop()
+
+        coVerify { practiceRepository.recordStop() }
     }
 
     @Test
