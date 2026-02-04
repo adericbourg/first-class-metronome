@@ -62,3 +62,22 @@ The bundle will be at `app/build/outputs/bundle/release/app-release.aab`.
 - **Back up your keystore securely.** If you lose it, you cannot update your app on the Play Store.
 - **Never commit `keystore.properties` or `*.keystore` files.** They are gitignored by default.
 - Consider using [Google Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756) to let Google manage your app signing key.
+
+## Privacy Policy
+
+A privacy policy is required for Google Play Store submission. The policy is located at `docs/privacy-policy.md`.
+
+### Hosting on GitHub Pages
+
+1. Go to your repository on GitHub
+2. Navigate to **Settings** → **Pages**
+3. Under "Source", select **Deploy from a branch**
+4. Select `main` branch and `/docs` folder
+5. Click **Save**
+
+Your privacy policy will be available at:
+```
+https://<username>.github.io/<repository>/privacy-policy
+```
+
+Use this URL when submitting to the Play Store.
