@@ -8,17 +8,17 @@ plugins {
 }
 
 android {
-    namespace = "dev.dericbourg.firstclassmetronone"
+    namespace = "dev.dericbourg.firstclassmetronome"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "dev.dericbourg.firstclassmetronone"
+        applicationId = "dev.dericbourg.firstclassmetronome"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "dev.dericbourg.firstclassmetronone.HiltTestRunner"
+        testInstrumentationRunner = "dev.dericbourg.firstclassmetronome.HiltTestRunner"
     }
 
     buildTypes {
