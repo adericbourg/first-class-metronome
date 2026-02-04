@@ -12,6 +12,10 @@ Android metronome application built with modern Android development practices.
 - Ask me for every feature decision you have to make.
 - Always consider adding settings for a new feature.
 
+## Privacy policy
+
+- (important) Keep the privacy policy up-to-date.
+
 ## Technology Stack
 
 - **Language**: Kotlin
