@@ -91,9 +91,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.8.7")
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.58")
+    implementation("com.google.dagger:hilt-android:2.59.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    ksp("com.google.dagger:hilt-compiler:2.58")
+    ksp("com.google.dagger:hilt-compiler:2.59.1")
 
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
@@ -115,8 +115,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.58")
-    kspAndroidTest("com.google.dagger:hilt-compiler:2.58")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.1")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.59.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
