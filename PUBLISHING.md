@@ -64,6 +64,11 @@ This setup uses **Google Play App Signing**, where Google manages the app signin
 
 This key is **only for uploading** — Google will re-sign with their own key.
 
+When you run the command below, you'll be prompted to enter:
+- **Keystore password**: Password to protect the keystore file (use this for `UPLOAD_KEYSTORE_PASSWORD`)
+- **Key password**: Password to protect the specific key entry (use this for `UPLOAD_KEY_PASSWORD`)
+- Additional information (name, organization, etc.)
+
 ```bash
 keytool -genkeypair -v \
   -keystore upload.keystore \
@@ -73,36 +78,46 @@ keytool -genkeypair -v \
   -validity 10000
 ```
 
-#### 3. Create a Google Cloud Service Account
+**Important**: Save the passwords you enter — you'll need them for GitHub secrets in step 5.
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project (or use an existing one)
-3. Enable the **Google Play Android Developer API**:
-   - Go to **APIs & Services** → **Library**
-   - Search for "Google Play Android Developer API"
+The `-alias upload` parameter defines the key alias (use `upload` for `UPLOAD_KEY_ALIAS` unless you change it).
+
+#### 3. Set Up Google Cloud Service Account
+
+1. **Create a Google Cloud Project** (or use an existing one):
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Create a new project if needed
+
+2. **Enable the Google Play Developer API**:
+   - Go to the [Google Play Developer API page](https://console.developers.google.com/apis/api/androidpublisher.googleapis.com/)
    - Click **Enable**
-4. Create a service account:
-   - Go to **APIs & Services** → **Credentials**
-   - Click **Create Credentials** → **Service Account**
+
+3. **Create a Service Account**:
+   - Go to [Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) in Google Cloud Console
+   - Click **Create service account**
    - Name it (e.g., `github-play-publisher`)
-   - Click **Create and Continue**, then **Done**
-5. Create a JSON key:
+   - Click **Create and Continue**
+   - **Skip the optional IAM role assignment** (permissions are managed in Play Console, not Cloud Console)
+   - Click **Done**
+
+4. **Create a JSON key for the service account**:
    - Click on the service account you just created
-   - Go to **Keys** tab
+   - Go to the **Keys** tab
    - Click **Add Key** → **Create new key** → **JSON**
    - Save the downloaded JSON file securely
 
 #### 4. Grant Access in Play Console
 
 1. Go to [Google Play Console](https://play.google.com/console)
-2. Navigate to **Users and permissions** → **Invite new users**
-3. Enter the service account email (from the JSON file, looks like `name@project.iam.gserviceaccount.com`)
-4. Under **App permissions**, select your app
-5. Grant these permissions:
+2. Navigate to **Users and permissions**
+3. Click **Invite new users**
+4. Enter the service account email (from the JSON file, looks like `name@project.iam.gserviceaccount.com`)
+5. Under **App permissions**, select your app
+6. Grant these permissions:
    - **Release to production, exclude devices, and use Play App Signing**
    - **Release apps to testing tracks**
    - **Manage testing tracks and edit tester lists**
-6. Click **Invite user** → **Send invite**
+7. Click **Invite user** → **Send invite**
 
 #### 5. Configure GitHub Secrets
 
@@ -110,13 +125,13 @@ Go to your GitHub repository → **Settings** → **Secrets and variables** → 
 
 Add these secrets:
 
-| Secret Name | Value |
-|-------------|-------|
-| `UPLOAD_KEYSTORE_BASE64` | Base64-encoded upload keystore (see below) |
-| `UPLOAD_KEYSTORE_PASSWORD` | Password for the upload keystore |
-| `UPLOAD_KEY_ALIAS` | Key alias (e.g., `upload`) |
-| `UPLOAD_KEY_PASSWORD` | Password for the key |
-| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Contents of the service account JSON file |
+| Secret Name | Value | Source |
+|-------------|-------|--------|
+| `UPLOAD_KEYSTORE_BASE64` | Base64-encoded upload keystore (see below) | Your `upload.keystore` file |
+| `UPLOAD_KEYSTORE_PASSWORD` | Password for the keystore file | Keystore password from step 2 |
+| `UPLOAD_KEY_ALIAS` | Key alias | The `-alias` parameter from step 2 (e.g., `upload`) |
+| `UPLOAD_KEY_PASSWORD` | Password for the key entry | Key password from step 2 |
+| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Contents of the service account JSON file | JSON file from step 3 |
 
 To base64-encode your keystore:
 
