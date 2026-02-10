@@ -4,6 +4,17 @@
 
 Android metronome application built with modern Android development practices.
 
+## Global considerations
+
+- (important) Always write unit tests.
+- (important) Always run tests after writing some code.
+- Focus on code reuse and keeping things simple.
+- (important) Only comment complex pieces of code that needs context to be understood
+- Use the "rule of three": wait for three occurrences before abstracting
+
+### Security
+- (important) Never commit or write code that would be commited that contains secrets (passwords, tokens, API key...).
+
 ## Specifications
 
 - Stored in `/specs` folder.
