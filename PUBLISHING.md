@@ -69,6 +69,7 @@ When you run the command below, you'll be prompted to enter:
 - **Key password**: Password to protect the specific key entry (use this for `UPLOAD_KEY_PASSWORD`)
 - Additional information (name, organization, etc.)
 
+Run this from the `app` folder.
 ```bash
 keytool -genkeypair -v \
   -keystore upload.keystore \
