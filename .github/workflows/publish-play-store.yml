@@ -52,11 +52,21 @@ jobs:
           fi
           ls -lh app/build/outputs/bundle/release/app-release.aab
 
+      - name: Verify native debug symbols
+        run: |
+          if [ -d app/build/outputs/native-debug-symbols/release ]; then
+            echo "Native debug symbols found:"
+            ls -lh app/build/outputs/native-debug-symbols/release/
+          else
+            echo "Warning: Native debug symbols not found"
+          fi
+
       - name: Upload to Google Play Store
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: dev.dericbourg.firstclassmetronome
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          debugSymbols: app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
           track: internal
           status: completed
