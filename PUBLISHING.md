@@ -155,14 +155,79 @@ git push origin v1.0.0
 
 The GitHub Action will automatically build and upload to the **internal** track.
 
-### Changing the Release Track
+## Promoting a Release to Production
+
+Once your app is available for internal testers and you're ready to release to production, you have two options:
+
+### Option 1: Promote Through Google Play Console (Recommended)
+
+This is the safest approach as it doesn't require rebuilding the app bundle.
+
+1. **Go to Google Play Console**
+   - Navigate to [Google Play Console](https://play.google.com/console)
+   - Select your app
+
+2. **Navigate to the Internal Testing Track**
+   - Go to **Release** → **Testing** → **Internal testing**
+   - Find the release you want to promote
+
+3. **Promote the Release**
+   - Click **Promote release**
+   - Select **Production** (or **Open testing**/**Closed testing** if you want an intermediate step)
+   - Review the release details
+
+4. **Complete the Production Release**
+   - Review all required information (store listing, content rating, etc.)
+   - Add release notes for production users
+   - Click **Review release**
+   - Click **Start rollout to Production**
+
+5. **Monitor the Rollout**
+   - You can do a staged rollout (e.g., 5%, 10%, 50%, 100%) to minimize risk
+   - Monitor crash reports and user feedback
+   - Increase the rollout percentage gradually or halt if issues arise
+
+### Option 2: Automated Publishing Directly to Production
+
+You can configure the GitHub Action to publish directly to production by changing the target track.
+
+**⚠️ Warning**: This skips the internal testing phase. Only use this if you're confident in your release.
+
+1. **Edit the Workflow File**
+
+   Edit `.github/workflows/publish-play-store.yml` and change the `track` value on line 71:
+
+   ```yaml
+   track: production  # Changed from 'internal'
+   ```
+
+2. **Push a New Tag**
+
+   ```bash
+   # Update versionCode and versionName in app/build.gradle.kts
+   git add app/build.gradle.kts
+   git commit -m "Bump version to 1.0.0"
+   git tag v1.0.0
+   git push origin main v1.0.0
+   ```
+
+   The GitHub Action will automatically build and publish to production.
+
+### Available Release Tracks
 
 Edit `.github/workflows/publish-play-store.yml` and change the `track` value:
 
-- `internal` — Internal testing (default)
+- `internal` — Internal testing (default, recommended for automated builds)
 - `alpha` — Closed testing
 - `beta` — Open testing
 - `production` — Production release
+
+### Recommended Workflow
+
+1. **Automated Internal Testing**: Keep the GitHub Action configured for `internal` track
+2. **Manual Promotion**: Use Google Play Console to promote releases through the testing phases:
+   - Internal testing → Closed testing (alpha) → Open testing (beta) → Production
+3. **Staged Rollouts**: Use staged rollouts for production releases to minimize risk
 
 ### Troubleshooting
 
