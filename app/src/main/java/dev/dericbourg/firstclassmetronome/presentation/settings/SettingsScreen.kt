@@ -19,12 +19,17 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -34,6 +39,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -43,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
+import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
+import dev.dericbourg.firstclassmetronome.data.settings.displayName
 
 private val MIN_TOUCH_TARGET = 48.dp
 
@@ -60,6 +70,8 @@ fun SettingsScreen(
         onBpmIncrementChange = viewModel::setBpmIncrement,
         onHapticFeedbackChange = viewModel::setHapticFeedback,
         onHapticStrengthChange = viewModel::setHapticStrength,
+        onThemeModeChange = viewModel::setThemeMode,
+        onDynamicColorsChange = viewModel::setDynamicColorsEnabled,
         onResetClick = viewModel::showResetDialog,
         onConfirmReset = viewModel::confirmReset,
         onDismissDialog = viewModel::dismissDialog,
@@ -75,6 +87,8 @@ fun SettingsContent(
     onBpmIncrementChange: (Int) -> Unit,
     onHapticFeedbackChange: (Boolean) -> Unit,
     onHapticStrengthChange: (HapticStrength) -> Unit,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onDynamicColorsChange: (Boolean) -> Unit,
     onResetClick: () -> Unit,
     onConfirmReset: () -> Unit,
     onDismissDialog: () -> Unit,
@@ -120,6 +134,18 @@ fun SettingsContent(
                     showStrengthSelector = state.hasAmplitudeControl
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AppearanceSettings(
+                themeMode = state.themeMode,
+                onThemeModeChange = onThemeModeChange,
+                dynamicColorsEnabled = state.dynamicColorsEnabled,
+                onDynamicColorsChange = onDynamicColorsChange,
+                isDynamicColorsSupported = state.isDynamicColorsSupported
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -349,4 +375,122 @@ private fun ResetConfirmationDialog(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppearanceSettings(
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+    dynamicColorsEnabled: Boolean,
+    onDynamicColorsChange: (Boolean) -> Unit,
+    isDynamicColorsSupported: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "Appearance",
+            style = MaterialTheme.typography.headlineSmall
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ThemeDropdown(
+            currentTheme = themeMode,
+            onThemeChanged = onThemeModeChange
+        )
+
+        if (isDynamicColorsSupported) {
+            Spacer(modifier = Modifier.height(16.dp))
+            DynamicColorsToggle(
+                enabled = dynamicColorsEnabled,
+                onEnabledChange = onDynamicColorsChange
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemeDropdown(
+    currentTheme: ThemeMode,
+    onThemeChanged: (ThemeMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = currentTheme.displayName,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Theme") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .semantics {
+                    contentDescription = "Theme selection, current: ${currentTheme.displayName}"
+                }
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ThemeMode.entries.forEach { mode ->
+                DropdownMenuItem(
+                    text = { Text(mode.displayName) },
+                    onClick = {
+                        onThemeChanged(mode)
+                        expanded = false
+                    },
+                    modifier = Modifier.semantics {
+                        contentDescription = "Select ${mode.displayName} theme"
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DynamicColorsToggle(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Dynamic colors",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Use Material You wallpaper colors",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Switch(
+            checked = enabled,
+            onCheckedChange = onEnabledChange,
+            modifier = Modifier.semantics {
+                contentDescription = if (enabled) {
+                    "Dynamic colors enabled"
+                } else {
+                    "Dynamic colors disabled"
+                }
+            }
+        )
+    }
 }

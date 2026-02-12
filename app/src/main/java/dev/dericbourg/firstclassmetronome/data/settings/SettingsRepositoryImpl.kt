@@ -21,11 +21,18 @@ class SettingsRepositoryImpl @Inject constructor(
             runCatching { HapticStrength.valueOf(name) }.getOrNull()
         } ?: AppSettings.DEFAULT_HAPTIC_STRENGTH
 
+        val themeMode = preferences[KEY_THEME_MODE]?.let { ordinal ->
+            ThemeMode.fromOrdinal(ordinal)
+        } ?: AppSettings.DEFAULT_THEME_MODE
+
         AppSettings(
             bpmIncrement = preferences[KEY_BPM_INCREMENT] ?: AppSettings.DEFAULT_BPM_INCREMENT,
             hapticFeedbackEnabled = preferences[KEY_HAPTIC_FEEDBACK_ENABLED]
                 ?: AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED,
-            hapticStrength = hapticStrength
+            hapticStrength = hapticStrength,
+            themeMode = themeMode,
+            dynamicColorsEnabled = preferences[KEY_DYNAMIC_COLORS_ENABLED]
+                ?: AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED
         )
     }
 
@@ -48,11 +55,25 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { preferences ->
+            preferences[KEY_THEME_MODE] = mode.ordinal
+        }
+    }
+
+    override suspend fun setDynamicColorsEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_DYNAMIC_COLORS_ENABLED] = enabled
+        }
+    }
+
     override suspend fun resetToDefaults() {
         dataStore.edit { preferences ->
             preferences.remove(KEY_BPM_INCREMENT)
             preferences.remove(KEY_HAPTIC_FEEDBACK_ENABLED)
             preferences.remove(KEY_HAPTIC_STRENGTH)
+            preferences.remove(KEY_THEME_MODE)
+            preferences.remove(KEY_DYNAMIC_COLORS_ENABLED)
         }
     }
 
@@ -60,5 +81,7 @@ class SettingsRepositoryImpl @Inject constructor(
         private val KEY_BPM_INCREMENT = intPreferencesKey("bpm_increment")
         private val KEY_HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
         private val KEY_HAPTIC_STRENGTH = stringPreferencesKey("haptic_strength")
+        private val KEY_THEME_MODE = intPreferencesKey("theme_mode")
+        private val KEY_DYNAMIC_COLORS_ENABLED = booleanPreferencesKey("dynamic_colors")
     }
 }

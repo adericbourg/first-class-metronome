@@ -51,6 +51,8 @@ class SettingsRepositoryImplTest {
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, settings.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, settings.hapticFeedbackEnabled)
         assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
+        assertEquals(AppSettings.DEFAULT_THEME_MODE, settings.themeMode)
+        assertEquals(AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED, settings.dynamicColorsEnabled)
     }
 
     @Test
@@ -99,6 +101,8 @@ class SettingsRepositoryImplTest {
         repository.setBpmIncrement(15)
         repository.setHapticFeedbackEnabled(true)
         repository.setHapticStrength(HapticStrength.STRONG)
+        repository.setThemeMode(ThemeMode.DARK)
+        repository.setDynamicColorsEnabled(false)
 
         repository.resetToDefaults()
 
@@ -106,6 +110,8 @@ class SettingsRepositoryImplTest {
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, settings.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, settings.hapticFeedbackEnabled)
         assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
+        assertEquals(AppSettings.DEFAULT_THEME_MODE, settings.themeMode)
+        assertEquals(AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED, settings.dynamicColorsEnabled)
     }
 
     @Test
@@ -126,5 +132,42 @@ class SettingsRepositoryImplTest {
 
         repository.setHapticStrength(HapticStrength.STRONG)
         assertEquals(HapticStrength.STRONG, repository.settings.first().hapticStrength)
+    }
+
+    @Test
+    fun setThemeMode_updatesValue() = runTest {
+        repository.setThemeMode(ThemeMode.DARK)
+
+        val settings = repository.settings.first()
+        assertEquals(ThemeMode.DARK, settings.themeMode)
+    }
+
+    @Test
+    fun setThemeMode_canChangeToAnyMode() = runTest {
+        repository.setThemeMode(ThemeMode.SYSTEM_DEFAULT)
+        assertEquals(ThemeMode.SYSTEM_DEFAULT, repository.settings.first().themeMode)
+
+        repository.setThemeMode(ThemeMode.LIGHT)
+        assertEquals(ThemeMode.LIGHT, repository.settings.first().themeMode)
+
+        repository.setThemeMode(ThemeMode.DARK)
+        assertEquals(ThemeMode.DARK, repository.settings.first().themeMode)
+    }
+
+    @Test
+    fun setDynamicColorsEnabled_updatesValue() = runTest {
+        repository.setDynamicColorsEnabled(false)
+
+        val settings = repository.settings.first()
+        assertFalse(settings.dynamicColorsEnabled)
+    }
+
+    @Test
+    fun setDynamicColorsEnabled_canBeToggled() = runTest {
+        repository.setDynamicColorsEnabled(false)
+        assertFalse(repository.settings.first().dynamicColorsEnabled)
+
+        repository.setDynamicColorsEnabled(true)
+        assertTrue(repository.settings.first().dynamicColorsEnabled)
     }
 }

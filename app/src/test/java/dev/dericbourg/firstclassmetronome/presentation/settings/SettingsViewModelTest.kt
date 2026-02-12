@@ -1,9 +1,11 @@
 package dev.dericbourg.firstclassmetronome.presentation.settings
 
+import android.os.Build
 import android.os.Vibrator
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
+import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -55,6 +57,8 @@ class SettingsViewModelTest {
         assertEquals(AppSettings.DEFAULT_BPM_INCREMENT, viewModel.state.value.bpmIncrement)
         assertEquals(AppSettings.DEFAULT_HAPTIC_FEEDBACK_ENABLED, viewModel.state.value.hapticFeedbackEnabled)
         assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, viewModel.state.value.hapticStrength)
+        assertEquals(AppSettings.DEFAULT_THEME_MODE, viewModel.state.value.themeMode)
+        assertEquals(AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED, viewModel.state.value.dynamicColorsEnabled)
     }
 
     @Test
@@ -95,12 +99,16 @@ class SettingsViewModelTest {
         settingsFlow.value = AppSettings(
             bpmIncrement = 10,
             hapticFeedbackEnabled = true,
-            hapticStrength = HapticStrength.STRONG
+            hapticStrength = HapticStrength.STRONG,
+            themeMode = ThemeMode.DARK,
+            dynamicColorsEnabled = false
         )
 
         assertEquals(10, viewModel.state.value.bpmIncrement)
         assertTrue(viewModel.state.value.hapticFeedbackEnabled)
         assertEquals(HapticStrength.STRONG, viewModel.state.value.hapticStrength)
+        assertEquals(ThemeMode.DARK, viewModel.state.value.themeMode)
+        assertFalse(viewModel.state.value.dynamicColorsEnabled)
     }
 
     @Test
@@ -170,5 +178,25 @@ class SettingsViewModelTest {
         viewModel.confirmReset()
 
         assertFalse(viewModel.state.value.showResetDialog)
+    }
+
+    @Test
+    fun initialState_checksDynamicColorsSupport() {
+        val isSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        assertEquals(isSupported, viewModel.state.value.isDynamicColorsSupported)
+    }
+
+    @Test
+    fun setThemeMode_callsRepository() {
+        viewModel.setThemeMode(ThemeMode.DARK)
+
+        coVerify { settingsRepository.setThemeMode(ThemeMode.DARK) }
+    }
+
+    @Test
+    fun setDynamicColorsEnabled_callsRepository() {
+        viewModel.setDynamicColorsEnabled(false)
+
+        coVerify { settingsRepository.setDynamicColorsEnabled(false) }
     }
 }
