@@ -5,6 +5,7 @@ A precise, accessible metronome app for musicians.
 ## Features
 
 - Accurate tempo control (BPM)
+- Audio and haptic beat
 - Accessibility-first design (WCAG 2.2 Level AA)
 - A worklog to help you track your practice sessions
 
