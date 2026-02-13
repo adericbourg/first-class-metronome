@@ -101,7 +101,7 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:2.59.1")
 
     // Core
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.17.0")
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.2.0")
