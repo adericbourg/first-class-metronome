@@ -24,7 +24,7 @@ class SessionComputer @Inject constructor() {
                     val gapFromLastStop = lastStopTime?.let { event.timestamp - it }
 
                     if (gapFromLastStop != null && gapFromLastStop >= SESSION_GAP_THRESHOLD_MS) {
-                        if (sessionStart != null && lastStopTime != null && totalDuration > 0) {
+                        if (sessionStart != null && totalDuration > 0) {
                             sessions.add(
                                 PracticeSession(
                                     startTime = sessionStart,
