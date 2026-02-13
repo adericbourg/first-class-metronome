@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -88,7 +89,8 @@ private fun StatsSection(
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.semantics { heading() }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -97,40 +99,26 @@ private fun StatsSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "7d",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "30d",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "total",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center
-            )
+            StatLabel("7 days", Modifier.weight(1f))
+            StatLabel("30 days", Modifier.weight(1f))
+            StatLabel("All time", Modifier.weight(1f))
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            values.forEach { value ->
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
+            values.forEachIndexed { index, value ->
+                val period = when (index) {
+                    0 -> "7 days"
+                    1 -> "30 days"
+                    else -> "All time"
+                }
+                StatValue(
+                    label = title,
+                    period = period,
+                    value = value,
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -152,4 +140,36 @@ private fun StatsSection(
             }
         }
     }
+}
+
+@Composable
+private fun StatLabel(text: String, modifier: Modifier = Modifier) {
+    val displayText = text.split(" ").first() + "d"
+    Text(
+        text = displayText,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.semantics {
+            contentDescription = text
+        },
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+private fun StatValue(
+    label: String,
+    period: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = value,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier.semantics {
+            contentDescription = "$label for $period: $value"
+        },
+        textAlign = TextAlign.Center
+    )
 }
