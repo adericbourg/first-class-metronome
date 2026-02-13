@@ -16,12 +16,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "dev.dericbourg.firstclassmetronome"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.dericbourg.firstclassmetronome"
         minSdk = 29
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 4
         versionName = "1.0.3"
 
@@ -101,7 +101,7 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:2.59.1")
 
     // Core
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.core:core-ktx:1.17.0")
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.2.0")
