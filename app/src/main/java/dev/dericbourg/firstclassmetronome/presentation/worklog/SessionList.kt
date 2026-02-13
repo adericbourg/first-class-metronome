@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.dericbourg.firstclassmetronome.domain.model.PracticeSession
 import java.time.LocalDate
@@ -80,8 +82,19 @@ private fun SessionCard(
     session: PracticeSession,
     modifier: Modifier = Modifier
 ) {
+    val accessibilityDescription = buildString {
+        append("Practice session at ")
+        append(session.startTimeFormatted)
+        append(", duration ")
+        append(session.durationFormatted)
+    }
+    
     Card(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                contentDescription = accessibilityDescription
+            }
     ) {
         Row(
             modifier = Modifier
