@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -42,8 +42,8 @@ import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 fun BeatSelectionScreen(
     onNavigateToWorkLog: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    viewModel: BeatSelectionViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: BeatSelectionViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val tapTempoState by viewModel.tapTempoState.collectAsState()
