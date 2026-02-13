@@ -1,4 +1,4 @@
-I# Add project specific ProGuard rules here.
+# Add project specific ProGuard rules here.
 
 # Hilt
 -keep class dagger.hilt.** { *; }
