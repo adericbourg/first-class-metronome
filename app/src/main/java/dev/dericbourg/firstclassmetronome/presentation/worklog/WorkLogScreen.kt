@@ -18,14 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import dev.dericbourg.firstclassmetronome.domain.model.PracticeStats
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 fun WorkLogScreen(
     onNavigateBack: () -> Unit,
-    viewModel: WorkLogViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: WorkLogViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
