@@ -48,7 +48,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
@@ -59,8 +59,8 @@ private val MIN_TOUCH_TARGET = 48.dp
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -321,7 +321,7 @@ private fun HapticStrengthSelector(
                         .padding(horizontal = 8.dp)
                         .semantics {
                             contentDescription = "Vibration strength: $label" +
-                                if (isSelected) ", selected" else ""
+                                    if (isSelected) ", selected" else ""
                         },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
