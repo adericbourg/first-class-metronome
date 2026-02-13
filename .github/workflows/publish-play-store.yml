@@ -52,21 +52,35 @@ jobs:
           fi
           ls -lh app/build/outputs/bundle/release/app-release.aab
 
-      - name: Verify native debug symbols
+      - name: Check for native debug symbols
+        id: check_symbols
         run: |
-          if [ -d app/build/outputs/native-debug-symbols/release ]; then
+          if [ -f app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip ]; then
             echo "Native debug symbols found:"
-            ls -lh app/build/outputs/native-debug-symbols/release/
+            ls -lh app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+            echo "has_symbols=true" >> $GITHUB_OUTPUT
           else
-            echo "Warning: Native debug symbols not found"
+            echo "Warning: Native debug symbols not found (this is normal for pure Kotlin/Java apps)"
+            echo "has_symbols=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Upload to Google Play Store
+      - name: Upload to Google Play Store (with debug symbols)
+        if: steps.check_symbols.outputs.has_symbols == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
           packageName: dev.dericbourg.firstclassmetronome
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           debugSymbols: app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+          track: internal
+          status: completed
+
+      - name: Upload to Google Play Store (without debug symbols)
+        if: steps.check_symbols.outputs.has_symbols == 'false'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: dev.dericbourg.firstclassmetronome
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
