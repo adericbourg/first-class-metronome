@@ -120,7 +120,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.1")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.2")
     kspAndroidTest("com.google.dagger:hilt-compiler:2.59.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
