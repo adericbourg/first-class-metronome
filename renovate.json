@@ -1,6 +1,33 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
+  "extends": ["config:recommended"],
+  "schedule": ["before 5am on monday"],
+  "prConcurrentLimit": 10,
+  "packageRules": [
+    {
+      "groupName": "compose",
+      "matchPackagePrefixes": ["androidx.compose"]
+    },
+    {
+      "groupName": "core",
+      "matchPackagePrefixes": ["androidx.core"]
+    },
+    {
+      "groupName": "lifecycle",
+      "matchPackagePrefixes": ["androidx.lifecycle"]
+    },
+    {
+      "groupName": "room",
+      "matchPackagePrefixes": ["androidx.room"]
+    },
+    {
+      "groupName": "hilt",
+      "matchPackagePrefixes": ["com.google.dagger"]
+    },
+    {
+      "groupName": "github-actions",
+      "matchManagers": ["github-actions"],
+      "prConcurrentLimit": 5
+    }
   ]
 }
