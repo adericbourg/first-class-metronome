@@ -1,0 +1,12 @@
+First-class Metronome is a precise, accessible metronome app designed for musicians who need reliable tempo control during practice.
+
+Features:
+- Accurate BPM control with a visual grid of common tempos
+- Fine-grained tempo adjustment with configurable increment buttons
+- Tap tempo for detecting tempo from live music
+- Audio and haptic beat feedback with adjustable vibration strength
+- Practice session tracking with a work log
+- Material You dynamic colors and dark/light theme support
+- Accessibility-first design (WCAG 2.2 Level AA compliant)
+- No internet connection required — all data stays on your device
+- Free and open source (GPLv3)
