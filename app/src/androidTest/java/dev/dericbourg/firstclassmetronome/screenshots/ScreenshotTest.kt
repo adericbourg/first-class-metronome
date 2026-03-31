@@ -35,7 +35,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun beatSelectionScreen_default() {
+    fun screenshot_ofBeatSelectionDefault_takesScreenshot() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme(dynamicColor = false) {
                 BeatSelectionContent(
@@ -59,7 +59,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun beatSelectionScreen_playing() {
+    fun screenshot_ofBeatSelectionPlaying_takesScreenshot() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme(dynamicColor = false) {
                 BeatSelectionContent(
@@ -86,7 +86,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun settingsScreen() {
+    fun screenshot_ofSettings_takesScreenshot() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme(dynamicColor = false) {
                 SettingsContent(
@@ -108,7 +108,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun workLogScreen_empty() {
+    fun screenshot_ofWorkLogEmpty_takesScreenshot() {
         composeTestRule.setContent {
             FirstClassMetronomeTheme(dynamicColor = false) {
                 WorkLogContent(
