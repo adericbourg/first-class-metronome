@@ -2,6 +2,14 @@
 
 This document describes how to set up publishing for the app.
 
+## Prerequisites
+
+Install Ruby dependencies (first time only, or after `Gemfile.lock` changes):
+
+```bash
+bundle install
+```
+
 ## Local Signing (Manual Builds)
 
 For local development and manual releases, the project reads signing credentials from a `keystore.properties` file (gitignored).
@@ -42,9 +50,24 @@ keyPassword=your_key_password
 ./gradlew bundleRelease
 ```
 
+## Screenshots
+
+Screenshots are captured using Fastlane's [screengrab](https://docs.fastlane.tools/actions/screengrab/) tool, which automates the process on a connected emulator.
+
+### Capturing Screenshots
+
+1. Start an Android emulator (via Android Studio or `emulator` CLI)
+2. Run:
+
+```bash
+bundle exec fastlane android screenshots
+```
+
+Screenshots are saved to `fastlane/metadata/android/en-US/images/phoneScreenshots/`. Commit the resulting files so they are uploaded to the Play Store with the next metadata or release push.
+
 ## Automated Publishing (GitHub Actions)
 
-The project includes a GitHub Action that automatically publishes to Google Play Store when you push a tag starting with `v` (e.g., `v1.0.0`).
+The project includes a GitHub Action that automatically publishes to Google Play Store using **Fastlane's `supply` action** when you push a tag starting with `v` (e.g., `v1.0.0`).
 
 This setup uses **Google Play App Signing**, where Google manages the app signing key and you only manage an upload key. Benefits:
 - If your upload key is compromised, you can reset it
@@ -153,7 +176,7 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The GitHub Action will automatically build and upload to the **internal** track.
+Pushing the tag triggers the GitHub Action, which runs Fastlane's `deploy` lane. That lane builds the release AAB and uploads it along with metadata and screenshots to the **internal** track.
 
 ## Promoting a Release to Production
 
@@ -240,6 +263,18 @@ Edit `.github/workflows/publish-play-store.yml` and change the `track` value:
 
 **"APK specifies a version code that has already been used"**
 - Increment `versionCode` in `app/build.gradle.kts`
+
+## Metadata Updates
+
+To update store descriptions, changelogs, or screenshots without publishing a new build, run:
+
+```bash
+bundle exec fastlane android upload_metadata
+```
+
+This runs Fastlane's `upload_metadata` lane, which pushes only metadata and screenshots to the Play Store (no new AAB is built or uploaded).
+
+Metadata files live in `fastlane/metadata/android/en-US/`. Edit the relevant files there before running the command.
 
 ## Privacy Policy
 
