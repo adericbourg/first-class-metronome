@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 import dev.dericbourg.firstclassmetronome.presentation.theme.FirstClassMetronomeTheme
 import org.junit.Before
 import org.junit.Rule
@@ -32,8 +33,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -47,8 +57,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -62,8 +81,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -79,8 +107,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = { selectedBpm = it },
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -96,8 +133,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(selectedBpm = 90),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -111,8 +157,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -126,8 +181,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -141,8 +205,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -156,8 +229,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(isPlaying = false),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -171,8 +253,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(isPlaying = true),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -188,8 +279,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = { playToggleCalled = true }
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = { playToggleCalled = true },
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
@@ -205,8 +305,17 @@ class BeatSelectionScreenTest {
             FirstClassMetronomeTheme {
                 BeatSelectionContent(
                     state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
                     onBpmSelected = {},
-                    onPlayToggle = {}
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {}
                 )
             }
         }
