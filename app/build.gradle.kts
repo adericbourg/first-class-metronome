@@ -23,7 +23,7 @@ android {
         minSdk = 29
         targetSdk = 36
         versionCode = 8
-        versionName = "1.0.8-2"
+        versionName = "1.0.8-3"
 
         testInstrumentationRunner = "dev.dericbourg.firstclassmetronome.HiltTestRunner"
     }
