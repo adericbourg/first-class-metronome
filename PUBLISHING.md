@@ -167,13 +167,20 @@ base64 upload.keystore              # Linux (prints to stdout)
 
 #### 6. Publish a Release
 
-1. Update `versionCode` and `versionName` in `app/build.gradle.kts`
-2. Commit your changes
-3. Create and push a tag:
+Use the version bump script to update, commit, and tag in one step:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+./bump-version.sh <major|minor|patch>
+```
+
+- `major` — bumps the first component and resets the rest (e.g. `1.0.8` → `2.0.0`)
+- `minor` — bumps the second component and resets the rest (e.g. `1.0.8` → `1.1.0`)
+- `patch` — bumps the third component (e.g. `1.0.8` → `1.0.9`)
+
+The script updates `versionCode` and `versionName` in `app/build.gradle.kts`, creates a commit, and creates a git tag. Then push when ready:
+
+```bash
+git push origin main v1.0.9
 ```
 
 Pushing the tag triggers the GitHub Action, which runs Fastlane's `deploy` lane. That lane builds the release AAB and uploads it along with metadata and screenshots to the **internal** track.
