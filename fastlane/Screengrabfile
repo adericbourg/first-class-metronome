@@ -1,4 +1,5 @@
 app_package_name("dev.dericbourg.firstclassmetronome")
+test_instrumentation_runner("dev.dericbourg.firstclassmetronome.HiltTestRunner")
 use_tests_in_packages(["dev.dericbourg.firstclassmetronome.screenshots"])
 
 app_apk_path("app/build/outputs/apk/debug/app-debug.apk")
