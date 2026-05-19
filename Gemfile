@@ -1,4 +1,4 @@
 source "https://rubygems.org"
 
 gem "fastlane", "~> 2.225"
-gem "CFPropertyList", "3.0.8"
+gem "CFPropertyList", "4.0.0"
