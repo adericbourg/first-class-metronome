@@ -2,32 +2,44 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "schedule": ["before 5am on monday"],
+  "automergeSchedule": ["* 0-6 * * *"],
   "prConcurrentLimit": 10,
+  "platformAutomerge": false,
+  "minimumReleaseAge": "3 days",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["before 5am on monday"]
+  },
   "packageRules": [
     {
       "groupName": "compose",
-      "matchPackagePrefixes": ["androidx.compose"]
+      "matchPackageNames": ["androidx.compose{/,}**"]
     },
     {
       "groupName": "core",
-      "matchPackagePrefixes": ["androidx.core"]
+      "matchPackageNames": ["androidx.core{/,}**"]
     },
     {
       "groupName": "lifecycle",
-      "matchPackagePrefixes": ["androidx.lifecycle"]
+      "matchPackageNames": ["androidx.lifecycle{/,}**"]
     },
     {
       "groupName": "room",
-      "matchPackagePrefixes": ["androidx.room"]
+      "matchPackageNames": ["androidx.room{/,}**"]
     },
     {
       "groupName": "hilt",
-      "matchPackagePrefixes": ["com.google.dagger"]
+      "matchPackageNames": ["com.google.dagger{/,}**"]
     },
     {
       "groupName": "github-actions",
       "matchManagers": ["github-actions"],
       "prConcurrentLimit": 5
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
     }
   ]
 }
