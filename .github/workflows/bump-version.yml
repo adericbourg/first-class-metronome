@@ -1,0 +1,123 @@
+name: Bump version
+
+on:
+  workflow_call:
+    inputs:
+      bump_type:
+        description: "Which version component to bump (major, minor, or patch)"
+        required: true
+        type: string
+    outputs:
+      version_name:
+        description: "New version name (e.g. 1.0.10)"
+        value: ${{ jobs.bump.outputs.version_name }}
+      version_code:
+        description: "New version code"
+        value: ${{ jobs.bump.outputs.version_code }}
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run tests and lint
+        run: ./gradlew test lint
+
+      - name: Compute new version
+        id: version
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
+        run: |
+          GRADLE_FILE="app/build.gradle.kts"
+
+          VERSION_CODE=$(grep -E '^\s+versionCode\s*=' "$GRADLE_FILE" | grep -oE '[0-9]+')
+          VERSION_NAME=$(grep -E '^\s+versionName\s*=' "$GRADLE_FILE" | grep -oE '"[^"]+"' | tr -d '"')
+
+          if [[ -z "$VERSION_CODE" || -z "$VERSION_NAME" ]]; then
+            echo "Error: Could not parse version from $GRADLE_FILE" >&2
+            exit 1
+          fi
+
+          if [[ "$VERSION_NAME" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9]+)?$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+          else
+            echo "Error: Cannot parse versionName '$VERSION_NAME'. Expected: major.minor.patch" >&2
+            exit 1
+          fi
+
+          case "$BUMP_TYPE" in
+            major) NEW_VERSION_NAME="$((MAJOR + 1)).0.0" ;;
+            minor) NEW_VERSION_NAME="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW_VERSION_NAME="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+
+          echo "version_name=$NEW_VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "version_code=$NEW_VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "old_version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "old_version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Update version in build.gradle.kts
+        env:
+          OLD_CODE: ${{ steps.version.outputs.old_version_code }}
+          NEW_CODE: ${{ steps.version.outputs.version_code }}
+          OLD_NAME: ${{ steps.version.outputs.old_version_name }}
+          NEW_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          GRADLE_FILE="app/build.gradle.kts"
+
+          perl -i -pe "s/versionCode = ${OLD_CODE}/versionCode = ${NEW_CODE}/" "$GRADLE_FILE"
+          perl -i -pe "s/versionName = \"${OLD_NAME}\"/versionName = \"${NEW_NAME}\"/" "$GRADLE_FILE"
+
+          UPDATED_CODE=$(grep -E '^\s+versionCode\s*=' "$GRADLE_FILE" | grep -oE '[0-9]+')
+          UPDATED_NAME=$(grep -E '^\s+versionName\s*=' "$GRADLE_FILE" | grep -oE '"[^"]+"' | tr -d '"')
+
+          if [[ "$UPDATED_CODE" != "$NEW_CODE" || "$UPDATED_NAME" != "$NEW_NAME" ]]; then
+            echo "Error: Version update verification failed" >&2
+            echo "Expected: versionCode=$NEW_CODE, versionName=$NEW_NAME" >&2
+            echo "Got: versionCode=$UPDATED_CODE, versionName=$UPDATED_NAME" >&2
+            exit 1
+          fi
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and tag
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          NEW_TAG="v${VERSION_NAME}"
+          git add app/build.gradle.kts
+          git commit -m "Release ${NEW_TAG}"
+          git tag "$NEW_TAG"
+
+      - name: Push commit and tag
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          git push origin HEAD:main "v${VERSION_NAME}"
