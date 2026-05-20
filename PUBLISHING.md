@@ -1,6 +1,6 @@
 # Publishing Setup
 
-This document describes how to set up publishing for the app.
+This document describes how to set up and run the publishing pipeline for the app.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ bundle install
 
 ## Local Signing (Manual Builds)
 
-For local development and manual releases, the project reads signing credentials from a `keystore.properties` file (gitignored).
+For local development builds, the project reads signing credentials from a `keystore.properties` file (gitignored).
 
 ### 1. Generate a Keystore
 
@@ -52,9 +52,7 @@ keyPassword=your_key_password
 
 ## Screenshots
 
-Screenshots are captured using Fastlane's [screengrab](https://docs.fastlane.tools/actions/screengrab/) tool, which automates the process on a connected emulator.
-
-### Capturing Screenshots
+Screenshots are captured using Fastlane's [screengrab](https://docs.fastlane.tools/actions/screengrab/) tool, which automates the process on a connected emulator. They are regenerated automatically on every release (see "Publishing a Release" below). To iterate on screenshots locally:
 
 1. Start an Android emulator (via Android Studio or `emulator` CLI)
 2. Run:
@@ -63,225 +61,74 @@ Screenshots are captured using Fastlane's [screengrab](https://docs.fastlane.too
 bundle exec fastlane android screenshots
 ```
 
-Screenshots are saved to `fastlane/metadata/android/en-US/images/phoneScreenshots/`. Commit the resulting files so they are uploaded to the Play Store with the next metadata or release push.
+Screenshots are saved to `fastlane/metadata/android/en-US/images/phoneScreenshots/`.
 
 ## Automated Publishing (GitHub Actions)
 
-The project includes a GitHub Action that automatically publishes to Google Play Store using **Fastlane's `supply` action** when you push a tag starting with `v` (e.g., `v1.0.0`).
+This project uses **Google Play App Signing**: Google manages the app signing key; you only manage an upload key. The upload key and Play credentials are stored as GitHub Actions secrets.
 
-This setup uses **Google Play App Signing**, where Google manages the app signing key and you only manage an upload key. Benefits:
-- If your upload key is compromised, you can reset it
-- Google optimizes APKs for different devices
-- Safer than managing the app signing key yourself
+### Required Secrets
 
-### Setup Steps
+Go to **Settings → Secrets and variables → Actions** in the GitHub repository and ensure these secrets exist:
 
-#### 1. Create Your App on Google Play Console
+| Secret Name | Value |
+|---|---|
+| `UPLOAD_KEYSTORE_BASE64` | Base64-encoded upload keystore (`base64 -i upload.keystore`) |
+| `UPLOAD_KEYSTORE_PASSWORD` | Password for the keystore file |
+| `UPLOAD_KEY_ALIAS` | Key alias (e.g. `upload`) |
+| `UPLOAD_KEY_PASSWORD` | Password for the key entry |
+| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Contents of the Play service account JSON file |
 
-1. Go to [Google Play Console](https://play.google.com/console)
-2. Create a new app
-3. Complete the app setup (content rating, store listing, etc.)
-4. **Important**: Upload your first AAB manually to create the app. Google Play App Signing is enabled by default for new apps.
+For setup instructions (creating the upload keystore, service account, and Play Console permissions), see the Google Play App Signing documentation.
 
-#### 2. Generate an Upload Keystore
+### Publishing a Release
 
-This key is **only for uploading** — Google will re-sign with their own key.
+1. Go to **Actions → Release** in the GitHub repository.
+2. Click **Run workflow**.
+3. Select the version component to bump: `patch`, `minor`, or `major`.
+4. Click **Run workflow**.
 
-When you run the command below, you'll be prompted to enter:
-- **Keystore password**: Password to protect the keystore file (use this for `UPLOAD_KEYSTORE_PASSWORD`)
-- **Key password**: Password to protect the specific key entry (use this for `UPLOAD_KEY_PASSWORD`)
-- Additional information (name, organization, etc.)
+The workflow then runs the following steps automatically, with no local action required:
 
-Run this from the `app` folder.
-```bash
-keytool -genkeypair -v \
-  -keystore upload.keystore \
-  -alias upload \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000
-```
+1. **Tests + lint** — fails fast before any tag or push if the build is broken.
+2. **Version bump** — increments `versionCode` by 1 and bumps `versionName` in `app/build.gradle.kts` according to the selected component.
+3. **Commit + tag + push** — commits `Release vX.Y.Z` to `main` and pushes the tag `vX.Y.Z`.
+4. **Build + upload** — builds the release AAB and uploads it to the Play Store **internal** track.
+5. **Screenshots** — regenerates store screenshots in an emulator and commits the updated PNGs to `main`.
 
-**Important**: Save the passwords you enter — you'll need them for GitHub secrets in step 5.
+The tag `vX.Y.Z` marks the exact commit that was released.
 
-The `-alias upload` parameter defines the key alias (use `upload` for `UPLOAD_KEY_ALIAS` unless you change it).
+### Recovery from partial failure
 
-#### 3. Set Up Google Cloud Service Account
-
-1. **Create a Google Cloud Project** (or use an existing one):
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project if needed
-
-2. **Enable the Google Play Developer API**:
-   - Go to the [Google Play Developer API page](https://console.developers.google.com/apis/api/androidpublisher.googleapis.com/)
-   - Click **Enable**
-
-3. **Create a Service Account**:
-   - Go to [Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) in Google Cloud Console
-   - Click **Create service account**
-   - Name it (e.g., `github-play-publisher`)
-   - Click **Create and Continue**
-   - **Skip the optional IAM role assignment** (permissions are managed in Play Console, not Cloud Console)
-   - Click **Done**
-
-4. **Create a JSON key for the service account**:
-   - Click on the service account you just created
-   - Go to the **Keys** tab
-   - Click **Add Key** → **Create new key** → **JSON**
-   - Save the downloaded JSON file securely
-
-#### 4. Grant Access in Play Console
-
-1. Go to [Google Play Console](https://play.google.com/console)
-2. Navigate to **Users and permissions**
-3. Click **Invite new users**
-4. Enter the service account email (from the JSON file, looks like `name@project.iam.gserviceaccount.com`)
-5. Under **App permissions**, select your app
-6. Grant these permissions:
-   - **Release to production, exclude devices, and use Play App Signing**
-   - **Release apps to testing tracks**
-   - **Manage testing tracks and edit tester lists**
-7. Click **Invite user** → **Send invite**
-
-#### 5. Configure GitHub Secrets
-
-Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
-
-Add these secrets:
-
-| Secret Name | Value | Source |
-|-------------|-------|--------|
-| `UPLOAD_KEYSTORE_BASE64` | Base64-encoded upload keystore (see below) | Your `upload.keystore` file |
-| `UPLOAD_KEYSTORE_PASSWORD` | Password for the keystore file | Keystore password from step 2 |
-| `UPLOAD_KEY_ALIAS` | Key alias | The `-alias` parameter from step 2 (e.g., `upload`) |
-| `UPLOAD_KEY_PASSWORD` | Password for the key entry | Key password from step 2 |
-| `PLAY_STORE_SERVICE_ACCOUNT_JSON` | Contents of the service account JSON file | JSON file from step 3 |
-
-To base64-encode your keystore:
-
-```bash
-base64 -i upload.keystore | pbcopy  # macOS (copies to clipboard)
-# or
-base64 upload.keystore              # Linux (prints to stdout)
-```
-
-#### 6. Publish a Release
-
-Use the version bump script to update, commit, and tag in one step:
-
-```bash
-./bump-version.sh <major|minor|patch>
-```
-
-- `major` — bumps the first component and resets the rest (e.g. `1.0.8` → `2.0.0`)
-- `minor` — bumps the second component and resets the rest (e.g. `1.0.8` → `1.1.0`)
-- `patch` — bumps the third component (e.g. `1.0.8` → `1.0.9`)
-
-The script updates `versionCode` and `versionName` in `app/build.gradle.kts`, creates a commit, and creates a git tag. Then push when ready:
-
-```bash
-git push origin main v1.0.9
-```
-
-Pushing the tag triggers the GitHub Action, which runs Fastlane's `deploy` lane. That lane builds the release AAB and uploads it along with metadata and screenshots to the **internal** track.
+| Failure point | State | Recovery |
+|---|---|---|
+| Tests/lint fail | `main` unchanged, no tag | Fix the code, merge, re-run the workflow. |
+| Version update fails | `main` unchanged | Check `app/build.gradle.kts` formatting; re-run. |
+| Push fails | `main` unchanged | Check branch protection and token permissions; re-run. |
+| Play upload fails (after push) | Tag pushed, no Play release | Run `bundle exec fastlane android deploy` locally from a checkout of the tag, or re-run only the failed workflow step via **Actions → Re-run failed jobs**. |
+| Screenshots fail | Release shipped, screenshots stale | Re-run the screenshots job from **Actions → Re-run failed jobs**. |
 
 ## Promoting a Release to Production
 
-Once your app is available for internal testers and you're ready to release to production, you have two options:
+Once available in the **internal** track, promote via Google Play Console:
 
-### Option 1: Promote Through Google Play Console (Recommended)
+1. Go to **Release → Testing → Internal testing**.
+2. Find the release and click **Promote release → Production** (or choose an intermediate track).
+3. Add release notes, review, and start the rollout.
 
-This is the safest approach as it doesn't require rebuilding the app bundle.
-
-1. **Go to Google Play Console**
-   - Navigate to [Google Play Console](https://play.google.com/console)
-   - Select your app
-
-2. **Navigate to the Internal Testing Track**
-   - Go to **Release** → **Testing** → **Internal testing**
-   - Find the release you want to promote
-
-3. **Promote the Release**
-   - Click **Promote release**
-   - Select **Production** (or **Open testing**/**Closed testing** if you want an intermediate step)
-   - Review the release details
-
-4. **Complete the Production Release**
-   - Review all required information (store listing, content rating, etc.)
-   - Add release notes for production users
-   - Click **Review release**
-   - Click **Start rollout to Production**
-
-5. **Monitor the Rollout**
-   - You can do a staged rollout (e.g., 5%, 10%, 50%, 100%) to minimize risk
-   - Monitor crash reports and user feedback
-   - Increase the rollout percentage gradually or halt if issues arise
-
-### Option 2: Automated Publishing Directly to Production
-
-You can configure the GitHub Action to publish directly to production by changing the target track.
-
-**⚠️ Warning**: This skips the internal testing phase. Only use this if you're confident in your release.
-
-1. **Edit the Workflow File**
-
-   Edit `.github/workflows/publish-play-store.yml` and change the `track` value on line 71:
-
-   ```yaml
-   track: production  # Changed from 'internal'
-   ```
-
-2. **Push a New Tag**
-
-   ```bash
-   # Update versionCode and versionName in app/build.gradle.kts
-   git add app/build.gradle.kts
-   git commit -m "Bump version to 1.0.0"
-   git tag v1.0.0
-   git push origin main v1.0.0
-   ```
-
-   The GitHub Action will automatically build and publish to production.
-
-### Available Release Tracks
-
-Edit `.github/workflows/publish-play-store.yml` and change the `track` value:
-
-- `internal` — Internal testing (default, recommended for automated builds)
-- `alpha` — Closed testing
-- `beta` — Open testing
-- `production` — Production release
-
-### Recommended Workflow
-
-1. **Automated Internal Testing**: Keep the GitHub Action configured for `internal` track
-2. **Manual Promotion**: Use Google Play Console to promote releases through the testing phases:
-   - Internal testing → Closed testing (alpha) → Open testing (beta) → Production
-3. **Staged Rollouts**: Use staged rollouts for production releases to minimize risk
-
-### Troubleshooting
-
-**"The current user has insufficient permissions"**
-- Verify the service account has the correct permissions in Play Console
-- Wait a few minutes after granting permissions — they can take time to propagate
-
-**"Package not found"**
-- You must upload the first AAB manually through Play Console before automated uploads work
-
-**"APK specifies a version code that has already been used"**
-- Increment `versionCode` in `app/build.gradle.kts`
+A staged rollout (5% → 10% → 50% → 100%) is recommended to catch regressions before full exposure.
 
 ## Metadata Updates
 
-To update store descriptions, changelogs, or screenshots without publishing a new build, run:
+To update store descriptions, changelogs, or screenshots without publishing a new build:
 
 ```bash
 bundle exec fastlane android upload_metadata
 ```
 
-This runs Fastlane's `upload_metadata` lane, which pushes only metadata and screenshots to the Play Store (no new AAB is built or uploaded).
+This runs Fastlane's `upload_metadata` lane: pushes metadata and screenshots to Play Store without building or uploading an AAB.
 
-Metadata files live in `fastlane/metadata/android/en-US/`. Edit the relevant files there before running the command.
+Metadata files live in `fastlane/metadata/android/en-US/`.
 
 ## Privacy Policy
 
@@ -289,11 +136,11 @@ A privacy policy is required for Google Play Store submission. The policy is loc
 
 ### Hosting on GitHub Pages
 
-1. Go to your repository on GitHub
-2. Navigate to **Settings** → **Pages**
-3. Under "Source", select **Deploy from a branch**
-4. Select `main` branch and `/docs` folder
-5. Click **Save**
+1. Go to your repository on GitHub.
+2. Navigate to **Settings → Pages**.
+3. Under "Source", select **Deploy from a branch**.
+4. Select `main` branch and `/docs` folder.
+5. Click **Save**.
 
 Your privacy policy will be available at:
 ```
