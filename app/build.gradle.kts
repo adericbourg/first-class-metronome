@@ -76,6 +76,15 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+// Hilt 2.59.2 bundles kotlin-metadata-jvm that only reads up to metadata format 2.3.0.
+// Force 2.4.0 so Hilt's KSP processor can parse classes compiled by Kotlin 2.4.0.
+// Remove this block once Hilt releases native support for Kotlin 2.4.0 metadata.
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+    }
+}
+
 dependencies {
     // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2026.05.01")
