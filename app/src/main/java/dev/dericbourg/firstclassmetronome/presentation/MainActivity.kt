@@ -10,41 +10,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
 import dev.dericbourg.firstclassmetronome.presentation.beatselection.BeatSelectionScreen
 import dev.dericbourg.firstclassmetronome.presentation.navigation.AppScreen
 import dev.dericbourg.firstclassmetronome.presentation.settings.SettingsScreen
 import dev.dericbourg.firstclassmetronome.presentation.theme.FirstClassMetronomeTheme
 import dev.dericbourg.firstclassmetronome.presentation.worklog.WorkLogScreen
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var settingsRepository: SettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val settings by settingsRepository.settings.collectAsState(initial = null)
+            val viewModel: MainViewModel = hiltViewModel()
+            val state by viewModel.state.collectAsStateWithLifecycle()
 
-            val useDarkTheme = when (settings?.themeMode) {
-                ThemeMode.SYSTEM_DEFAULT, null -> isSystemInDarkTheme()
+            val useDarkTheme = when (state.themeMode) {
+                ThemeMode.SYSTEM_DEFAULT -> isSystemInDarkTheme()
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
 
-            val dynamicColor = (settings?.dynamicColorsEnabled ?: true) &&
+            val dynamicColor = state.dynamicColorsEnabled &&
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
             FirstClassMetronomeTheme(
