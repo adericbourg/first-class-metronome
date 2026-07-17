@@ -1,11 +1,10 @@
 package dev.dericbourg.firstclassmetronome.presentation.settings
 
-import android.os.Build
-import android.os.Vibrator
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
+import dev.dericbourg.firstclassmetronome.device.DeviceCapabilities
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -25,9 +24,15 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
 
+    private class FakeDeviceCapabilities(
+        override val hasVibrator: Boolean = true,
+        override val hasAmplitudeControl: Boolean = true,
+        override val supportsDynamicColors: Boolean = true
+    ) : DeviceCapabilities
+
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var settingsRepository: SettingsRepository
-    private lateinit var vibrator: Vibrator
+    private lateinit var deviceCapabilities: DeviceCapabilities
     private lateinit var settingsFlow: MutableStateFlow<AppSettings>
     private lateinit var viewModel: SettingsViewModel
 
@@ -39,12 +44,9 @@ class SettingsViewModelTest {
         settingsRepository = mockk(relaxed = true) {
             every { settings } returns settingsFlow
         }
-        vibrator = mockk(relaxed = true) {
-            every { hasVibrator() } returns true
-            every { hasAmplitudeControl() } returns true
-        }
+        deviceCapabilities = FakeDeviceCapabilities()
 
-        viewModel = SettingsViewModel(settingsRepository, vibrator)
+        viewModel = SettingsViewModel(settingsRepository, deviceCapabilities)
     }
 
     @After
@@ -68,10 +70,7 @@ class SettingsViewModelTest {
 
     @Test
     fun initialState_whenNoVibrator_hapticNotSupported() {
-        val noVibratorDevice = mockk<Vibrator> {
-            every { hasVibrator() } returns false
-            every { hasAmplitudeControl() } returns false
-        }
+        val noVibratorDevice = FakeDeviceCapabilities(hasVibrator = false, hasAmplitudeControl = false)
         val vm = SettingsViewModel(settingsRepository, noVibratorDevice)
 
         assertFalse(vm.state.value.isHapticSupported)
@@ -84,10 +83,7 @@ class SettingsViewModelTest {
 
     @Test
     fun initialState_whenNoAmplitudeControl_hasAmplitudeControlFalse() {
-        val noAmplitudeVibrator = mockk<Vibrator> {
-            every { hasVibrator() } returns true
-            every { hasAmplitudeControl() } returns false
-        }
+        val noAmplitudeVibrator = FakeDeviceCapabilities(hasVibrator = true, hasAmplitudeControl = false)
         val vm = SettingsViewModel(settingsRepository, noAmplitudeVibrator)
 
         assertTrue(vm.state.value.isHapticSupported)
@@ -182,8 +178,14 @@ class SettingsViewModelTest {
 
     @Test
     fun initialState_checksDynamicColorsSupport() {
-        val isSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        assertEquals(isSupported, viewModel.state.value.isDynamicColorsSupported)
+        assertTrue(viewModel.state.value.isDynamicColorsSupported)
+    }
+
+    @Test
+    fun initialState_whenDynamicColorsUnsupported_isDynamicColorsSupportedFalse() {
+        val vm = SettingsViewModel(settingsRepository, FakeDeviceCapabilities(supportsDynamicColors = false))
+
+        assertFalse(vm.state.value.isDynamicColorsSupported)
     }
 
     @Test

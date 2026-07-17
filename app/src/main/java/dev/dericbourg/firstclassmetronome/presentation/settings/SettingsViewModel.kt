@@ -1,7 +1,5 @@
 package dev.dericbourg.firstclassmetronome.presentation.settings
 
-import android.os.Build
-import android.os.Vibrator
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,6 +7,7 @@ import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
+import dev.dericbourg.firstclassmetronome.device.DeviceCapabilities
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,21 +18,18 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val vibrator: Vibrator
+    private val deviceCapabilities: DeviceCapabilities
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SettingsState())
     val state: StateFlow<SettingsState> = _state.asStateFlow()
 
     init {
-        val isHapticSupported = vibrator.hasVibrator()
-        val hasAmplitudeControl = vibrator.hasAmplitudeControl()
-        val isDynamicColorsSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         _state.update {
             it.copy(
-                isHapticSupported = isHapticSupported,
-                hasAmplitudeControl = hasAmplitudeControl,
-                isDynamicColorsSupported = isDynamicColorsSupported
+                isHapticSupported = deviceCapabilities.hasVibrator,
+                hasAmplitudeControl = deviceCapabilities.hasAmplitudeControl,
+                isDynamicColorsSupported = deviceCapabilities.supportsDynamicColors
             )
         }
 
