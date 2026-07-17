@@ -13,8 +13,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.dericbourg.firstclassmetronome.R
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -28,9 +30,10 @@ class MetronomePlayer @Inject constructor(
     private val vibrator: Vibrator,
     private val settingsRepository: SettingsRepository
 ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val isPlaying = AtomicBoolean(false)
     private val currentBpm = AtomicInteger(60)
-    private val hapticEnabled = AtomicBoolean(false)
+    private val hapticFeedbackEnabled = AtomicBoolean(false)
     private val hapticStrength = AtomicReference(HapticStrength.MEDIUM)
     private var playbackThread: Thread? = null
     private var clickSamples: ShortArray? = null
@@ -40,6 +43,13 @@ class MetronomePlayer @Inject constructor(
 
     init {
         loadClickSound()
+        scope.launch {
+            settingsRepository.settings.collect { settings ->
+                hapticFeedbackEnabled.set(settings.hapticFeedbackEnabled)
+                hapticStrength.set(settings.hapticStrength)
+                Log.d(TAG, "Haptic config updated: enabled=${settings.hapticFeedbackEnabled}, strength=${settings.hapticStrength}")
+            }
+        }
     }
 
     private fun loadClickSound() {
@@ -70,12 +80,6 @@ class MetronomePlayer @Inject constructor(
             Log.e(TAG, "Cannot start: click sound not loaded")
             return
         }
-
-        val settings = runBlocking { settingsRepository.settings.first() }
-        val hasVibrator = vibrator.hasVibrator()
-        hapticEnabled.set(settings.hapticFeedbackEnabled && hasVibrator)
-        hapticStrength.set(settings.hapticStrength)
-        Log.d(TAG, "Haptic config: enabled=${settings.hapticFeedbackEnabled}, hasVibrator=$hasVibrator, strength=${settings.hapticStrength}")
 
         isPlaying.set(true)
 
@@ -151,7 +155,7 @@ class MetronomePlayer @Inject constructor(
                 val silenceSamples = samplesPerBeat - clickSamples.size
 
                 // Schedule haptic feedback to fire after audio latency
-                if (hapticEnabled.get()) {
+                if (hapticFeedbackEnabled.get() && vibrator.hasVibrator()) {
                     vibrationHandler.postDelayed({
                         triggerVibration()
                     }, audioLatencyMs)
