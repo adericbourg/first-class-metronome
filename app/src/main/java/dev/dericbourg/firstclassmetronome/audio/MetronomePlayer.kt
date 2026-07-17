@@ -14,9 +14,15 @@ import dev.dericbourg.firstclassmetronome.R
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.di.DefaultDispatcher
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
+import dev.dericbourg.firstclassmetronome.domain.model.BeatPattern
+import dev.dericbourg.firstclassmetronome.domain.model.ClickSound
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -37,8 +43,15 @@ class MetronomePlayer @Inject constructor(
     private val currentBpm = AtomicInteger(60)
     private val hapticFeedbackEnabled = AtomicBoolean(false)
     private val hapticStrength = AtomicReference(HapticStrength.MEDIUM)
+    private val currentPattern = AtomicReference(BeatPattern.DEFAULT)
+    private val beatIndex = AtomicInteger(0)
     private var playbackThread: Thread? = null
     private var clickSamples: ShortArray? = null
+
+    private val _currentBeat = MutableStateFlow(NO_BEAT)
+
+    /** Index of the beat currently sounding within the measure, or [NO_BEAT] when stopped. */
+    val currentBeat: StateFlow<Int> = _currentBeat.asStateFlow()
 
     val playing: Boolean
         get() = isPlaying.get()
@@ -84,6 +97,7 @@ class MetronomePlayer @Inject constructor(
         }
 
         isPlaying.set(true)
+        beatIndex.set(0)
 
         playbackThread = Thread({
             runPlaybackLoop(samples)
@@ -97,10 +111,17 @@ class MetronomePlayer @Inject constructor(
         isPlaying.set(false)
         playbackThread?.join(THREAD_JOIN_TIMEOUT_MS)
         playbackThread = null
+        _currentBeat.value = NO_BEAT
     }
 
     fun updateBpm(bpm: Int) {
         currentBpm.set(bpm)
+    }
+
+    /** Update the looping beat pattern; restarts the measure from beat 0. */
+    fun updatePattern(pattern: List<BeatOutput>) {
+        currentPattern.set(pattern)
+        beatIndex.set(0)
     }
 
     fun release() {
@@ -151,20 +172,29 @@ class MetronomePlayer @Inject constructor(
         try {
             while (isPlaying.get()) {
                 val bpm = currentBpm.get()
+                val pattern = currentPattern.get()
+                val positionInMeasure = beatIndex.get() % pattern.size.coerceAtLeast(1)
+                val output = BeatPattern.outputFor(pattern, positionInMeasure)
+                val beatSamples = samplesFor(output, clickSamples)
 
                 // Calculate samples per beat: at 44100 Hz, 60 BPM = 44100 samples per beat
                 val samplesPerBeat = SAMPLE_RATE * 60 / bpm
-                val silenceSamples = samplesPerBeat - clickSamples.size
+                val silenceSamples = samplesPerBeat - (beatSamples?.size ?: 0)
 
-                // Schedule haptic feedback to fire after audio latency
-                if (hapticFeedbackEnabled.get() && vibrator.hasVibrator()) {
-                    vibrationHandler.postDelayed({
+                // Align the highlight and haptic to the moment this beat becomes audible
+                // (audioTrack.write is buffered ahead of playback by ~audioLatencyMs).
+                val shouldVibrate = BeatPattern.shouldVibrate(output, hapticFeedbackEnabled.get())
+                vibrationHandler.postDelayed({
+                    _currentBeat.value = positionInMeasure
+                    if (shouldVibrate && vibrator.hasVibrator()) {
                         triggerVibration()
-                    }, audioLatencyMs)
-                }
+                    }
+                }, audioLatencyMs)
 
-                // Write click sound
-                audioTrack.write(clickSamples, 0, clickSamples.size)
+                // Write this beat's sound, if any
+                if (beatSamples != null) {
+                    audioTrack.write(beatSamples, 0, beatSamples.size)
+                }
 
                 // Write silence for the remainder of the beat
                 if (silenceSamples > 0 && isPlaying.get()) {
@@ -177,6 +207,8 @@ class MetronomePlayer @Inject constructor(
                         remaining -= toWrite
                     }
                 }
+
+                beatIndex.set(positionInMeasure + 1)
             }
         } finally {
             audioTrack.stop()
@@ -184,6 +216,14 @@ class MetronomePlayer @Inject constructor(
             vibrationHandler.removeCallbacksAndMessages(null)
             vibrationThread.quitSafely()
         }
+    }
+
+    /** Samples to play for a beat, or null when the beat produces no sound. */
+    private fun samplesFor(output: BeatOutput, clickSamples: ShortArray): ShortArray? = when (output) {
+        is BeatOutput.Sound -> when (output.sound) {
+            ClickSound.CLICK -> clickSamples
+        }
+        BeatOutput.NoSound, BeatOutput.HapticOnly -> null
     }
 
     private fun triggerVibration() {
@@ -207,6 +247,7 @@ class MetronomePlayer @Inject constructor(
     }
 
     companion object {
+        const val NO_BEAT = -1
         private const val TAG = "MetronomePlayer"
         private const val SAMPLE_RATE = 44100
         private const val WAV_HEADER_SIZE = 44
