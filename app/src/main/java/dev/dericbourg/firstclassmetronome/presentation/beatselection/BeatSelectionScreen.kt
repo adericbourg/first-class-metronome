@@ -159,6 +159,13 @@ fun BeatSelectionContent(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        BeatIndicatorRow(
+            beatPattern = state.beatPattern,
+            currentBeat = state.currentBeat
+        )
+
         Spacer(modifier = Modifier.weight(1f))
 
         BpmGrid(
