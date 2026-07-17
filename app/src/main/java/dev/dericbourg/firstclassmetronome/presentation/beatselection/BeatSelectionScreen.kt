@@ -35,6 +35,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
 import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoOverlay
 import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 
@@ -47,6 +48,7 @@ fun BeatSelectionScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val tapTempoState by viewModel.tapTempoState.collectAsStateWithLifecycle()
+    val beatConfigState by viewModel.beatConfigState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -66,6 +68,7 @@ fun BeatSelectionScreen(
     BeatSelectionContent(
         state = state,
         tapTempoState = tapTempoState,
+        beatConfigState = beatConfigState,
         onBpmSelected = viewModel::selectBpm,
         onDecreaseBpm = viewModel::decreaseBpm,
         onIncreaseBpm = viewModel::increaseBpm,
@@ -74,6 +77,10 @@ fun BeatSelectionScreen(
         onTap = viewModel::recordTap,
         onApplyTappedBpm = viewModel::applyTappedBpm,
         onCancelTapTempo = viewModel::closeTapTempo,
+        onOpenBeatConfig = viewModel::openBeatConfig,
+        onSetBeatCount = viewModel::setBeatCount,
+        onSetBeatOutput = viewModel::setBeatOutput,
+        onCloseBeatConfig = viewModel::closeBeatConfig,
         onNavigateToWorkLog = onNavigateToWorkLog,
         onNavigateToSettings = onNavigateToSettings,
         modifier = modifier
@@ -94,6 +101,11 @@ fun BeatSelectionContent(
     onCancelTapTempo: () -> Unit,
     onNavigateToWorkLog: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    beatConfigState: BeatConfigState = BeatConfigState(),
+    onOpenBeatConfig: () -> Unit = {},
+    onSetBeatCount: (Int) -> Unit = {},
+    onSetBeatOutput: (Int, BeatOutput) -> Unit = { _, _ -> },
+    onCloseBeatConfig: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -174,7 +186,8 @@ fun BeatSelectionContent(
             onDecreaseBpm = onDecreaseBpm,
             onIncreaseBpm = onIncreaseBpm,
             onPlayToggle = onPlayToggle,
-            onTapTempo = onTapTempo
+            onTapTempo = onTapTempo,
+            onOpenBeatConfig = onOpenBeatConfig
         )
     }
 
@@ -184,6 +197,15 @@ fun BeatSelectionContent(
             onTap = onTap,
             onApply = onApplyTappedBpm,
             onCancel = onCancelTapTempo
+        )
+    }
+
+    if (beatConfigState.isVisible) {
+        BeatConfigOverlay(
+            beatPattern = state.beatPattern,
+            onSetBeatCount = onSetBeatCount,
+            onSetBeatOutput = onSetBeatOutput,
+            onClose = onCloseBeatConfig
         )
     }
 }

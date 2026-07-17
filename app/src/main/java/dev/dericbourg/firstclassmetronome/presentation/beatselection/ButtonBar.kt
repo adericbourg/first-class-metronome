@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TouchApp
@@ -48,6 +49,7 @@ fun ButtonBar(
     onIncreaseBpm: () -> Unit,
     onPlayToggle: () -> Unit,
     onTapTempo: () -> Unit,
+    onOpenBeatConfig: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -70,7 +72,8 @@ fun ButtonBar(
             isPlaying = isPlaying,
             isHapticEnabled = isHapticEnabled,
             onPlayToggle = onPlayToggle,
-            onTapTempo = onTapTempo
+            onTapTempo = onTapTempo,
+            onOpenBeatConfig = onOpenBeatConfig
         )
     }
 }
@@ -128,6 +131,7 @@ private fun ActionButtons(
     isHapticEnabled: Boolean,
     onPlayToggle: () -> Unit,
     onTapTempo: () -> Unit,
+    onOpenBeatConfig: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val playButtonDescription = if (isPlaying) "Stop metronome" else "Start metronome"
@@ -148,6 +152,17 @@ private fun ActionButtons(
             horizontalArrangement = Arrangement.spacedBy(BUTTON_SPACING),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            IconButton(
+                onClick = onOpenBeatConfig,
+                modifier = Modifier
+                    .sizeIn(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
+                    .semantics { contentDescription = "Configure beats" }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.GridView,
+                    contentDescription = null
+                )
+            }
             IconButton(
                 onClick = onTapTempo,
                 modifier = Modifier
