@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +34,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoOverlay
 import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 
@@ -45,8 +45,8 @@ fun BeatSelectionScreen(
     modifier: Modifier = Modifier,
     viewModel: BeatSelectionViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsState()
-    val tapTempoState by viewModel.tapTempoState.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val tapTempoState by viewModel.tapTempoState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
