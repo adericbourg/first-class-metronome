@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.dericbourg.firstclassmetronome.audio.MetronomePlayer
 import dev.dericbourg.firstclassmetronome.data.repository.PracticeRepository
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
+import dev.dericbourg.firstclassmetronome.domain.model.ClickSound
 import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,15 +29,25 @@ class BeatSelectionViewModel @Inject constructor(
     private val _tapTempoState = MutableStateFlow(TapTempoState())
     val tapTempoState: StateFlow<TapTempoState> = _tapTempoState.asStateFlow()
 
+    private val _beatConfigState = MutableStateFlow(BeatConfigState())
+    val beatConfigState: StateFlow<BeatConfigState> = _beatConfigState.asStateFlow()
+
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
+                metronomePlayer.updatePattern(settings.beatPattern)
                 _state.update {
                     it.copy(
                         bpmIncrement = settings.bpmIncrement,
-                        isHapticEnabled = settings.hapticFeedbackEnabled
+                        isHapticEnabled = settings.hapticFeedbackEnabled,
+                        beatPattern = settings.beatPattern
                     )
                 }
+            }
+        }
+        viewModelScope.launch {
+            metronomePlayer.currentBeat.collect { beat ->
+                _state.update { it.copy(currentBeat = beat) }
             }
         }
     }
@@ -162,8 +174,45 @@ class BeatSelectionViewModel @Inject constructor(
         _tapTempoState.update { TapTempoState() }
     }
 
+    fun openBeatConfig() {
+        _beatConfigState.update { it.copy(isVisible = true) }
+    }
+
+    fun closeBeatConfig() {
+        _beatConfigState.update { it.copy(isVisible = false) }
+    }
+
+    fun setBeatCount(count: Int) {
+        val clamped = count.coerceIn(BeatSelectionState.MIN_BEATS, BeatSelectionState.MAX_BEATS)
+        val current = _state.value.beatPattern
+        if (clamped == current.size) return
+
+        val resized = if (clamped > current.size) {
+            current + List(clamped - current.size) { DEFAULT_ADDED_BEAT }
+        } else {
+            current.take(clamped)
+        }
+        persistPattern(resized)
+    }
+
+    fun setBeatOutput(index: Int, output: BeatOutput) {
+        val current = _state.value.beatPattern
+        if (index !in current.indices) return
+        persistPattern(current.toMutableList().apply { this[index] = output })
+    }
+
+    private fun persistPattern(pattern: List<BeatOutput>) {
+        viewModelScope.launch {
+            settingsRepository.setBeatPattern(pattern)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         metronomePlayer.stop()
+    }
+
+    companion object {
+        private val DEFAULT_ADDED_BEAT = BeatOutput.Sound(ClickSound.CLICK)
     }
 }

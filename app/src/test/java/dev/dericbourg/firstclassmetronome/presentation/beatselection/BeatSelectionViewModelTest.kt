@@ -4,6 +4,8 @@ import dev.dericbourg.firstclassmetronome.audio.MetronomePlayer
 import dev.dericbourg.firstclassmetronome.data.repository.PracticeRepository
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
+import dev.dericbourg.firstclassmetronome.domain.model.ClickSound
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -31,13 +33,17 @@ class BeatSelectionViewModelTest {
     private lateinit var practiceRepository: PracticeRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var settingsFlow: MutableStateFlow<AppSettings>
+    private lateinit var currentBeatFlow: MutableStateFlow<Int>
     private lateinit var viewModel: BeatSelectionViewModel
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
-        metronomePlayer = mockk(relaxed = true)
+        currentBeatFlow = MutableStateFlow(MetronomePlayer.NO_BEAT)
+        metronomePlayer = mockk(relaxed = true) {
+            every { currentBeat } returns currentBeatFlow
+        }
         practiceRepository = mockk(relaxed = true)
         settingsFlow = MutableStateFlow(AppSettings())
         settingsRepository = mockk(relaxed = true) {
@@ -499,5 +505,123 @@ class BeatSelectionViewModelTest {
         settingsFlow.value = AppSettings(hapticFeedbackEnabled = false)
 
         assertFalse(viewModel.state.value.isHapticEnabled)
+    }
+
+    // Beat pattern tests
+
+    private val click = BeatOutput.Sound(ClickSound.CLICK)
+
+    @Test
+    fun beatConfigInitialState_isNotVisible() {
+        assertFalse(viewModel.beatConfigState.value.isVisible)
+    }
+
+    @Test
+    fun openBeatConfig_makesDialogVisible() {
+        viewModel.openBeatConfig()
+
+        assertTrue(viewModel.beatConfigState.value.isVisible)
+    }
+
+    @Test
+    fun closeBeatConfig_hidesDialog() {
+        viewModel.openBeatConfig()
+
+        viewModel.closeBeatConfig()
+
+        assertFalse(viewModel.beatConfigState.value.isVisible)
+    }
+
+    @Test
+    fun beatPattern_updatesFromSettings() {
+        val pattern = listOf(click, BeatOutput.NoSound, BeatOutput.HapticOnly)
+
+        settingsFlow.value = AppSettings(beatPattern = pattern)
+
+        assertEquals(pattern, viewModel.state.value.beatPattern)
+    }
+
+    @Test
+    fun beatPattern_pushedToPlayerOnSettingsChange() {
+        val pattern = listOf(click, BeatOutput.NoSound)
+
+        settingsFlow.value = AppSettings(beatPattern = pattern)
+
+        verify { metronomePlayer.updatePattern(pattern) }
+    }
+
+    @Test
+    fun setBeatCount_whenLarger_appendsClickBeats() {
+        settingsFlow.value = AppSettings(beatPattern = listOf(click, BeatOutput.NoSound))
+
+        viewModel.setBeatCount(4)
+
+        coVerify {
+            settingsRepository.setBeatPattern(
+                listOf(click, BeatOutput.NoSound, click, click)
+            )
+        }
+    }
+
+    @Test
+    fun setBeatCount_whenSmaller_dropsTail() {
+        settingsFlow.value = AppSettings(
+            beatPattern = listOf(click, BeatOutput.NoSound, BeatOutput.HapticOnly)
+        )
+
+        viewModel.setBeatCount(1)
+
+        coVerify { settingsRepository.setBeatPattern(listOf(click)) }
+    }
+
+    @Test
+    fun setBeatCount_clampsToMaximum() {
+        viewModel.setBeatCount(99)
+
+        coVerify {
+            settingsRepository.setBeatPattern(
+                match { it.size == BeatSelectionState.MAX_BEATS }
+            )
+        }
+    }
+
+    @Test
+    fun setBeatCount_clampsToMinimum() {
+        settingsFlow.value = AppSettings(beatPattern = listOf(click, click, click))
+
+        viewModel.setBeatCount(0)
+
+        coVerify {
+            settingsRepository.setBeatPattern(
+                match { it.size == BeatSelectionState.MIN_BEATS }
+            )
+        }
+    }
+
+    @Test
+    fun setBeatOutput_replacesBeatAtIndex() {
+        settingsFlow.value = AppSettings(beatPattern = listOf(click, click, click))
+
+        viewModel.setBeatOutput(1, BeatOutput.NoSound)
+
+        coVerify {
+            settingsRepository.setBeatPattern(listOf(click, BeatOutput.NoSound, click))
+        }
+    }
+
+    @Test
+    fun setBeatOutput_whenIndexOutOfBounds_doesNothing() {
+        settingsFlow.value = AppSettings(beatPattern = listOf(click))
+
+        viewModel.setBeatOutput(5, BeatOutput.NoSound)
+
+        coVerify(exactly = 0) { settingsRepository.setBeatPattern(any()) }
+    }
+
+    @Test
+    fun currentBeat_reflectsPlayerState() {
+        currentBeatFlow.value = 2
+
+        assertEquals(2, viewModel.state.value.currentBeat)
     }
 }
