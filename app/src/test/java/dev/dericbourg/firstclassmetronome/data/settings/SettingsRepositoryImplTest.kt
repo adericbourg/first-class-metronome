@@ -3,6 +3,8 @@ package dev.dericbourg.firstclassmetronome.data.settings
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
+import dev.dericbourg.firstclassmetronome.domain.model.ClickSound
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -53,6 +55,31 @@ class SettingsRepositoryImplTest {
         assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
         assertEquals(AppSettings.DEFAULT_THEME_MODE, settings.themeMode)
         assertEquals(AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED, settings.dynamicColorsEnabled)
+        assertEquals(AppSettings.DEFAULT_BEAT_PATTERN, settings.beatPattern)
+    }
+
+    @Test
+    fun setBeatPattern_updatesValue() = runTest {
+        val pattern = listOf(
+            BeatOutput.Sound(ClickSound.CLICK),
+            BeatOutput.NoSound,
+            BeatOutput.HapticOnly,
+            BeatOutput.Sound(ClickSound.CLICK)
+        )
+
+        repository.setBeatPattern(pattern)
+
+        val settings = repository.settings.first()
+        assertEquals(pattern, settings.beatPattern)
+    }
+
+    @Test
+    fun setBeatPattern_canChangeBeatCount() = runTest {
+        repository.setBeatPattern(List(3) { BeatOutput.Sound(ClickSound.CLICK) })
+        assertEquals(3, repository.settings.first().beatPattern.size)
+
+        repository.setBeatPattern(List(7) { BeatOutput.Sound(ClickSound.CLICK) })
+        assertEquals(7, repository.settings.first().beatPattern.size)
     }
 
     @Test
@@ -103,6 +130,7 @@ class SettingsRepositoryImplTest {
         repository.setHapticStrength(HapticStrength.STRONG)
         repository.setThemeMode(ThemeMode.DARK)
         repository.setDynamicColorsEnabled(false)
+        repository.setBeatPattern(listOf(BeatOutput.NoSound, BeatOutput.HapticOnly))
 
         repository.resetToDefaults()
 
@@ -112,6 +140,7 @@ class SettingsRepositoryImplTest {
         assertEquals(AppSettings.DEFAULT_HAPTIC_STRENGTH, settings.hapticStrength)
         assertEquals(AppSettings.DEFAULT_THEME_MODE, settings.themeMode)
         assertEquals(AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED, settings.dynamicColorsEnabled)
+        assertEquals(AppSettings.DEFAULT_BEAT_PATTERN, settings.beatPattern)
     }
 
     @Test

@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
+import dev.dericbourg.firstclassmetronome.domain.model.BeatPattern
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,6 +27,10 @@ class SettingsRepositoryImpl @Inject constructor(
             ThemeMode.fromOrdinal(ordinal)
         } ?: AppSettings.DEFAULT_THEME_MODE
 
+        val beatPattern = preferences[KEY_BEAT_PATTERN]?.let { encoded ->
+            BeatPattern.decode(encoded)
+        } ?: AppSettings.DEFAULT_BEAT_PATTERN
+
         AppSettings(
             bpmIncrement = preferences[KEY_BPM_INCREMENT] ?: AppSettings.DEFAULT_BPM_INCREMENT,
             hapticFeedbackEnabled = preferences[KEY_HAPTIC_FEEDBACK_ENABLED]
@@ -32,7 +38,8 @@ class SettingsRepositoryImpl @Inject constructor(
             hapticStrength = hapticStrength,
             themeMode = themeMode,
             dynamicColorsEnabled = preferences[KEY_DYNAMIC_COLORS_ENABLED]
-                ?: AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED
+                ?: AppSettings.DEFAULT_DYNAMIC_COLORS_ENABLED,
+            beatPattern = beatPattern
         )
     }
 
@@ -67,6 +74,12 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun setBeatPattern(pattern: List<BeatOutput>) {
+        dataStore.edit { preferences ->
+            preferences[KEY_BEAT_PATTERN] = BeatPattern.encode(pattern)
+        }
+    }
+
     override suspend fun resetToDefaults() {
         dataStore.edit { preferences ->
             preferences.remove(KEY_BPM_INCREMENT)
@@ -74,6 +87,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(KEY_HAPTIC_STRENGTH)
             preferences.remove(KEY_THEME_MODE)
             preferences.remove(KEY_DYNAMIC_COLORS_ENABLED)
+            preferences.remove(KEY_BEAT_PATTERN)
         }
     }
 
@@ -83,5 +97,6 @@ class SettingsRepositoryImpl @Inject constructor(
         private val KEY_HAPTIC_STRENGTH = stringPreferencesKey("haptic_strength")
         private val KEY_THEME_MODE = intPreferencesKey("theme_mode")
         private val KEY_DYNAMIC_COLORS_ENABLED = booleanPreferencesKey("dynamic_colors")
+        private val KEY_BEAT_PATTERN = stringPreferencesKey("beat_pattern")
     }
 }
