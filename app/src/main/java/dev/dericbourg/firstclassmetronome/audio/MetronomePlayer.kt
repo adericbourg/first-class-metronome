@@ -88,7 +88,7 @@ class MetronomePlayer @Inject constructor(
     fun start(bpm: Int) {
         if (isPlaying.get()) return
 
-        currentBpm.set(bpm)
+        currentBpm.set(clampBpm(bpm))
 
         val samples = clickSamples
         if (samples == null) {
@@ -115,7 +115,7 @@ class MetronomePlayer @Inject constructor(
     }
 
     fun updateBpm(bpm: Int) {
-        currentBpm.set(bpm)
+        currentBpm.set(clampBpm(bpm))
     }
 
     /** Update the looping beat pattern; restarts the measure from beat 0. */
@@ -248,11 +248,15 @@ class MetronomePlayer @Inject constructor(
 
     companion object {
         const val NO_BEAT = -1
+        const val MIN_BPM = 20
+        const val MAX_BPM = 300
         private const val TAG = "MetronomePlayer"
         private const val SAMPLE_RATE = 44100
         private const val WAV_HEADER_SIZE = 44
         private const val THREAD_JOIN_TIMEOUT_MS = 1000L
         private const val SILENCE_CHUNK_SIZE = 4410 // ~100ms chunks for responsive stopping
         private const val ADDITIONAL_AUDIO_LATENCY_MS = 45L // Extra latency for DAC/driver
+
+        internal fun clampBpm(bpm: Int): Int = bpm.coerceIn(MIN_BPM, MAX_BPM)
     }
 }
