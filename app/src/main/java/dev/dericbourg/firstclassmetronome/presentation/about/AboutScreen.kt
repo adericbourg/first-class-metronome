@@ -1,7 +1,6 @@
 package dev.dericbourg.firstclassmetronome.presentation.about
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
@@ -52,12 +52,12 @@ fun AboutScreen(
         onNavigateBack = onNavigateBack,
         onOpenSource = {
             runCatching {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(state.sourceUrl)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, state.sourceUrl.toUri()))
             }
         },
         onSendEmail = {
             runCatching {
-                context.startActivity(Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${state.authorEmail}")))
+                context.startActivity(Intent(Intent.ACTION_SENDTO, "mailto:${state.authorEmail}".toUri()))
             }
         },
         modifier = modifier

@@ -27,14 +27,7 @@ class DefaultAppInfoProvider @Inject constructor(
         get() = packageInfo?.versionName ?: "unknown"
 
     override val versionCode: Long
-        get() = packageInfo?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                it.longVersionCode
-            } else {
-                @Suppress("DEPRECATION")
-                it.versionCode.toLong()
-            }
-        } ?: 0L
+        get() = packageInfo?.longVersionCode ?: 0L
 
     override val androidVersionRelease: String
         get() = Build.VERSION.RELEASE
