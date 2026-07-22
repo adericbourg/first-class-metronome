@@ -15,6 +15,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepositoryImpl
+import dev.dericbourg.firstclassmetronome.device.AppInfoProvider
+import dev.dericbourg.firstclassmetronome.device.DefaultAppInfoProvider
 import dev.dericbourg.firstclassmetronome.device.DefaultDeviceCapabilities
 import dev.dericbourg.firstclassmetronome.device.DeviceCapabilities
 import javax.inject.Singleton
@@ -54,4 +56,8 @@ abstract class SettingsBindingsModule {
     @Binds
     @Singleton
     abstract fun bindDeviceCapabilities(impl: DefaultDeviceCapabilities): DeviceCapabilities
+
+    @Binds
+    @Singleton
+    abstract fun bindAppInfoProvider(impl: DefaultAppInfoProvider): AppInfoProvider
 }
