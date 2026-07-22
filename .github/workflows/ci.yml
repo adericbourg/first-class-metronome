@@ -57,6 +57,17 @@ jobs:
           path: app/build/reports/tests/
           retention-days: 7
 
+      - name: Generate coverage report
+        run: ./gradlew jacocoTestReport --no-daemon
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: app/build/reports/jacoco/jacocoTestReport/
+          retention-days: 7
+
   lint:
     runs-on: ubuntu-latest
 
