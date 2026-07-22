@@ -43,7 +43,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -67,7 +68,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -91,7 +93,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -117,7 +120,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -143,7 +147,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -167,7 +172,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -191,7 +197,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -215,7 +222,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -239,7 +247,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -263,7 +272,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -289,7 +299,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -315,7 +326,8 @@ class BeatSelectionScreenTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -323,5 +335,35 @@ class BeatSelectionScreenTest {
         BeatSelectionState.BPM_VALUES.forEach { bpm ->
             composeTestRule.onNodeWithText(bpm.toString()).assertIsDisplayed()
         }
+    }
+
+    @Test
+    fun aboutMenuItem_whenClicked_callsOnNavigateToAbout() {
+        var aboutCalled = false
+
+        composeTestRule.setContent {
+            FirstClassMetronomeTheme {
+                BeatSelectionContent(
+                    state = BeatSelectionState(),
+                    tapTempoState = TapTempoState(),
+                    onBpmSelected = {},
+                    onDecreaseBpm = {},
+                    onIncreaseBpm = {},
+                    onPlayToggle = {},
+                    onTapTempo = {},
+                    onTap = {},
+                    onApplyTappedBpm = {},
+                    onCancelTapTempo = {},
+                    onNavigateToWorkLog = {},
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = { aboutCalled = true }
+                )
+            }
+        }
+
+        composeTestRule.onNodeWithContentDescription("Open menu").performClick()
+        composeTestRule.onNodeWithText("About").performClick()
+
+        assert(aboutCalled) { "Expected onNavigateToAbout to be called" }
     }
 }

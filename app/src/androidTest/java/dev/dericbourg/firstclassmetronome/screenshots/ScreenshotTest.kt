@@ -50,7 +50,8 @@ class ScreenshotTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }
@@ -77,7 +78,8 @@ class ScreenshotTest {
                     onApplyTappedBpm = {},
                     onCancelTapTempo = {},
                     onNavigateToWorkLog = {},
-                    onNavigateToSettings = {}
+                    onNavigateToSettings = {},
+                    onNavigateToAbout = {}
                 )
             }
         }

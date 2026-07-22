@@ -10,4 +10,6 @@ sealed class AppScreen : Parcelable {
     data object WorkLog : AppScreen()
     @Parcelize
     data object Settings : AppScreen()
+    @Parcelize
+    data object About : AppScreen()
 }

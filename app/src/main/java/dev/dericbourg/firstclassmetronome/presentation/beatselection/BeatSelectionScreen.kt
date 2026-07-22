@@ -43,6 +43,7 @@ import dev.dericbourg.firstclassmetronome.presentation.taptempo.TapTempoState
 fun BeatSelectionScreen(
     onNavigateToWorkLog: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BeatSelectionViewModel = hiltViewModel()
 ) {
@@ -83,6 +84,7 @@ fun BeatSelectionScreen(
         onCloseBeatConfig = viewModel::closeBeatConfig,
         onNavigateToWorkLog = onNavigateToWorkLog,
         onNavigateToSettings = onNavigateToSettings,
+        onNavigateToAbout = onNavigateToAbout,
         modifier = modifier
     )
 }
@@ -101,6 +103,7 @@ fun BeatSelectionContent(
     onCancelTapTempo: () -> Unit,
     onNavigateToWorkLog: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     beatConfigState: BeatConfigState = BeatConfigState(),
     onOpenBeatConfig: () -> Unit = {},
     onSetBeatCount: (Int) -> Unit = {},
@@ -153,6 +156,13 @@ fun BeatSelectionContent(
                         onClick = {
                             showMenu = false
                             onNavigateToSettings()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("About") },
+                        onClick = {
+                            showMenu = false
+                            onNavigateToAbout()
                         }
                     )
                 }

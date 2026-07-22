@@ -19,6 +19,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
+import dev.dericbourg.firstclassmetronome.presentation.about.AboutScreen
 import dev.dericbourg.firstclassmetronome.presentation.beatselection.BeatSelectionScreen
 import dev.dericbourg.firstclassmetronome.presentation.navigation.AppScreen
 import dev.dericbourg.firstclassmetronome.presentation.settings.SettingsScreen
@@ -59,12 +60,16 @@ class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         AppScreen.BeatSelection -> BeatSelectionScreen(
                             onNavigateToWorkLog = { currentScreen = AppScreen.WorkLog },
-                            onNavigateToSettings = { currentScreen = AppScreen.Settings }
+                            onNavigateToSettings = { currentScreen = AppScreen.Settings },
+                            onNavigateToAbout = { currentScreen = AppScreen.About }
                         )
                         AppScreen.WorkLog -> WorkLogScreen(
                             onNavigateBack = { currentScreen = AppScreen.BeatSelection }
                         )
                         AppScreen.Settings -> SettingsScreen(
+                            onNavigateBack = { currentScreen = AppScreen.BeatSelection }
+                        )
+                        AppScreen.About -> AboutScreen(
                             onNavigateBack = { currentScreen = AppScreen.BeatSelection }
                         )
                     }
