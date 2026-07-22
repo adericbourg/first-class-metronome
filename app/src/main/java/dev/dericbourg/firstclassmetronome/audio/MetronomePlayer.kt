@@ -130,46 +130,53 @@ class MetronomePlayer @Inject constructor(
     }
 
     private fun runPlaybackLoop(clickSamples: ShortArray) {
-        val bufferSizeInBytes = AudioTrack.getMinBufferSize(
-            SAMPLE_RATE,
-            AudioFormat.CHANNEL_OUT_MONO,
-            AudioFormat.ENCODING_PCM_16BIT
-        )
-
-        val audioTrack = AudioTrack.Builder()
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build()
-            )
-            .setAudioFormat(
-                AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(SAMPLE_RATE)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .build()
-            )
-            .setBufferSizeInBytes(bufferSizeInBytes)
-            .setTransferMode(AudioTrack.MODE_STREAM)
-            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
-            .build()
-
-        // Calculate audio latency: buffer size in samples / sample rate * 1000 for ms
-        // Buffer is in bytes, 2 bytes per sample (16-bit PCM)
-        // Add extra offset for DAC/driver latency that isn't captured by buffer size
-        val bufferSizeInSamples = bufferSizeInBytes / 2
-        val bufferLatencyMs = (bufferSizeInSamples * 1000L) / SAMPLE_RATE
-        val audioLatencyMs = bufferLatencyMs + ADDITIONAL_AUDIO_LATENCY_MS
-        Log.d(TAG, "Audio buffer: $bufferSizeInBytes bytes, $bufferSizeInSamples samples, buffer latency ~${bufferLatencyMs}ms, total latency ~${audioLatencyMs}ms")
-
-        // Handler for scheduling vibrations
-        val vibrationThread = HandlerThread("VibrationThread").apply { start() }
-        val vibrationHandler = Handler(vibrationThread.looper)
-
-        audioTrack.play()
+        var audioTrack: AudioTrack? = null
+        var vibrationThread: HandlerThread? = null
+        var vibrationHandler: Handler? = null
 
         try {
+            val bufferSizeInBytes = AudioTrack.getMinBufferSize(
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT
+            )
+
+            val track = AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(SAMPLE_RATE)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build()
+                )
+                .setBufferSizeInBytes(bufferSizeInBytes)
+                .setTransferMode(AudioTrack.MODE_STREAM)
+                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                .build()
+            audioTrack = track
+
+            // Calculate audio latency: buffer size in samples / sample rate * 1000 for ms
+            // Buffer is in bytes, 2 bytes per sample (16-bit PCM)
+            // Add extra offset for DAC/driver latency that isn't captured by buffer size
+            val bufferSizeInSamples = bufferSizeInBytes / 2
+            val bufferLatencyMs = (bufferSizeInSamples * 1000L) / SAMPLE_RATE
+            val audioLatencyMs = bufferLatencyMs + ADDITIONAL_AUDIO_LATENCY_MS
+            Log.d(TAG, "Audio buffer: $bufferSizeInBytes bytes, $bufferSizeInSamples samples, buffer latency ~${bufferLatencyMs}ms, total latency ~${audioLatencyMs}ms")
+
+            // Handler for scheduling vibrations
+            val thread = HandlerThread("VibrationThread").apply { start() }
+            vibrationThread = thread
+            val handler = Handler(thread.looper)
+            vibrationHandler = handler
+
+            track.play()
+
             while (isPlaying.get()) {
                 val bpm = currentBpm.get()
                 val pattern = currentPattern.get()
@@ -184,7 +191,7 @@ class MetronomePlayer @Inject constructor(
                 // Align the highlight and haptic to the moment this beat becomes audible
                 // (audioTrack.write is buffered ahead of playback by ~audioLatencyMs).
                 val shouldVibrate = BeatPattern.shouldVibrate(output, hapticFeedbackEnabled.get())
-                vibrationHandler.postDelayed({
+                handler.postDelayed({
                     _currentBeat.value = positionInMeasure
                     if (shouldVibrate && vibrator.hasVibrator()) {
                         triggerVibration()
@@ -193,7 +200,7 @@ class MetronomePlayer @Inject constructor(
 
                 // Write this beat's sound, if any
                 if (beatSamples != null) {
-                    audioTrack.write(beatSamples, 0, beatSamples.size)
+                    track.write(beatSamples, 0, beatSamples.size)
                 }
 
                 // Write silence for the remainder of the beat
@@ -203,18 +210,22 @@ class MetronomePlayer @Inject constructor(
 
                     while (remaining > 0 && isPlaying.get()) {
                         val toWrite = minOf(remaining, silence.size)
-                        audioTrack.write(silence, 0, toWrite)
+                        track.write(silence, 0, toWrite)
                         remaining -= toWrite
                     }
                 }
 
                 beatIndex.set(positionInMeasure + 1)
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Playback failed", e)
         } finally {
-            audioTrack.stop()
-            audioTrack.release()
-            vibrationHandler.removeCallbacksAndMessages(null)
-            vibrationThread.quitSafely()
+            audioTrack?.stop()
+            audioTrack?.release()
+            vibrationHandler?.removeCallbacksAndMessages(null)
+            vibrationThread?.quitSafely()
+            isPlaying.set(false)
+            _currentBeat.value = NO_BEAT
         }
     }
 
