@@ -22,22 +22,12 @@ class PracticeRepository @Inject constructor(
     private val sessionComputer: SessionComputer
 ) {
 
-    suspend fun recordStart() {
-        eventDao.insert(
-            PracticeEventEntity(
-                timestamp = System.currentTimeMillis(),
-                eventType = EventType.START
-            )
-        )
-    }
+    suspend fun recordStart() = record(EventType.START)
 
-    suspend fun recordStop() {
-        eventDao.insert(
-            PracticeEventEntity(
-                timestamp = System.currentTimeMillis(),
-                eventType = EventType.STOP
-            )
-        )
+    suspend fun recordStop() = record(EventType.STOP)
+
+    private suspend fun record(eventType: EventType) {
+        eventDao.insert(PracticeEventEntity(timestamp = System.currentTimeMillis(), eventType = eventType))
     }
 
     fun getAllSessions(): Flow<List<PracticeSession>> {
