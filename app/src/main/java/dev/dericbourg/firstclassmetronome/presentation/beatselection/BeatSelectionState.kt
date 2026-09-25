@@ -1,5 +1,6 @@
 package dev.dericbourg.firstclassmetronome.presentation.beatselection
 
+import dev.dericbourg.firstclassmetronome.audio.MetronomePlayer
 import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
 import dev.dericbourg.firstclassmetronome.domain.model.BeatPattern
@@ -26,11 +27,11 @@ data class BeatSelectionState(
     companion object {
         const val DEFAULT_BPM = 60
         const val GRID_COLUMNS = 4
-        const val MIN_BPM = 20
-        const val MAX_BPM = 300
+        const val MIN_BPM = MetronomePlayer.MIN_BPM
+        const val MAX_BPM = MetronomePlayer.MAX_BPM
         const val MIN_BEATS = 1
         const val MAX_BEATS = 12
-        const val NO_BEAT = -1
+        const val NO_BEAT = MetronomePlayer.NO_BEAT
 
         val BPM_VALUES = listOf(
             30, 35, 40, 45,
