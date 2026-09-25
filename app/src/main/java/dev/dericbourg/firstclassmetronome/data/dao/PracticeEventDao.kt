@@ -14,9 +14,6 @@ interface PracticeEventDao {
     @Query("SELECT * FROM practice_events ORDER BY timestamp ASC")
     fun getAllEvents(): Flow<List<PracticeEventEntity>>
 
-    @Query("SELECT * FROM practice_events ORDER BY timestamp ASC")
-    suspend fun getAllEventsOnce(): List<PracticeEventEntity>
-
     @Query("SELECT * FROM practice_events WHERE timestamp < :beforeTimestamp ORDER BY timestamp ASC")
     suspend fun getEventsBefore(beforeTimestamp: Long): List<PracticeEventEntity>
 
