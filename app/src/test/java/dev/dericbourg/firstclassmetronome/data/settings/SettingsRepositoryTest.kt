@@ -22,14 +22,14 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SettingsRepositoryImplTest {
+class SettingsRepositoryTest {
 
     @get:Rule
     val tempFolder = TemporaryFolder()
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var dataStore: DataStore<Preferences>
-    private lateinit var repository: SettingsRepositoryImpl
+    private lateinit var repository: SettingsRepository
 
     @Before
     fun setup() {
@@ -38,7 +38,7 @@ class SettingsRepositoryImplTest {
         dataStore = PreferenceDataStoreFactory.create {
             tempFolder.newFile("test_settings.preferences_pb")
         }
-        repository = SettingsRepositoryImpl(dataStore)
+        repository = SettingsRepository(dataStore)
     }
 
     @After
