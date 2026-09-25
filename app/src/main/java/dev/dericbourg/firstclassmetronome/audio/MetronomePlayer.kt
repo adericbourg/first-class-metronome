@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -67,9 +66,7 @@ class MetronomePlayer @Inject constructor(
 
     private fun loadClickSound() {
         try {
-            val inputStream: InputStream = context.resources.openRawResource(R.raw.click)
-            val bytes = inputStream.readBytes()
-            inputStream.close()
+            val bytes = context.resources.openRawResource(R.raw.click).use { it.readBytes() }
 
             // Skip WAV header (44 bytes) and convert to ShortArray
             val dataBytes = bytes.copyOfRange(WAV_HEADER_SIZE, bytes.size)
