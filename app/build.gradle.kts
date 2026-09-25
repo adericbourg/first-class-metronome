@@ -119,7 +119,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
 detekt {
     buildUponDefaultConfig = true
-    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     baseline = rootProject.file("config/detekt/baseline.xml")
 }
 
