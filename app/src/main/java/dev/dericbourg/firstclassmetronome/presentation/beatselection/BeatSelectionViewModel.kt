@@ -154,15 +154,7 @@ class BeatSelectionViewModel @Inject constructor(
         val tappedBpm = _tapTempoState.value.calculatedBpm ?: return
         val wasPlaying = _tapTempoState.value.wasPlayingBeforeOpen
 
-        _state.update { currentState ->
-            val isOnGrid = tappedBpm in currentState.availableBpmValues
-            currentState.copy(
-                selectedBpm = tappedBpm,
-                isPlaying = wasPlaying
-            ).let {
-                if (!isOnGrid) it else it
-            }
-        }
+        _state.update { it.copy(selectedBpm = tappedBpm, isPlaying = wasPlaying) }
 
         if (wasPlaying) {
             metronomePlayer.start(tappedBpm)
