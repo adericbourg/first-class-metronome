@@ -115,20 +115,6 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun setBpmIncrement_clampsToMinimum() {
-        viewModel.setBpmIncrement(0)
-
-        coVerify { settingsRepository.setBpmIncrement(AppSettings.MIN_BPM_INCREMENT) }
-    }
-
-    @Test
-    fun setBpmIncrement_clampsToMaximum() {
-        viewModel.setBpmIncrement(100)
-
-        coVerify { settingsRepository.setBpmIncrement(AppSettings.MAX_BPM_INCREMENT) }
-    }
-
-    @Test
     fun setHapticFeedback_callsRepository() {
         viewModel.setHapticFeedback(true)
 

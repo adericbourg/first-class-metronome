@@ -3,7 +3,6 @@ package dev.dericbourg.firstclassmetronome.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.dericbourg.firstclassmetronome.data.settings.AppSettings
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
 import dev.dericbourg.firstclassmetronome.data.settings.ThemeMode
@@ -49,9 +48,8 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setBpmIncrement(value: Int) {
-        val clampedValue = value.coerceIn(AppSettings.MIN_BPM_INCREMENT, AppSettings.MAX_BPM_INCREMENT)
         viewModelScope.launch {
-            settingsRepository.setBpmIncrement(clampedValue)
+            settingsRepository.setBpmIncrement(value)
         }
     }
 
