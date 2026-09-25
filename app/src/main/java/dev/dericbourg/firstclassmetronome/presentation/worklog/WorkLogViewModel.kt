@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.dericbourg.firstclassmetronome.data.repository.PracticeRepository
+import dev.dericbourg.firstclassmetronome.domain.StatsComputer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WorkLogViewModel @Inject constructor(
-    private val repository: PracticeRepository
+    private val repository: PracticeRepository,
+    private val statsComputer: StatsComputer
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(WorkLogState())
@@ -22,12 +24,7 @@ class WorkLogViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.getAllSessions().collect { sessions ->
-                _state.update { it.copy(sessions = sessions) }
-            }
-        }
-        viewModelScope.launch {
-            repository.getStats().collect { stats ->
-                _state.update { it.copy(stats = stats) }
+                _state.update { it.copy(sessions = sessions, stats = statsComputer.computeStats(sessions)) }
             }
         }
     }

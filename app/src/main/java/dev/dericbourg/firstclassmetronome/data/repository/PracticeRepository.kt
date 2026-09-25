@@ -8,12 +8,9 @@ import dev.dericbourg.firstclassmetronome.data.entity.PracticeEventEntity
 import dev.dericbourg.firstclassmetronome.data.entity.PracticeSessionEntity
 import dev.dericbourg.firstclassmetronome.data.model.EventType
 import dev.dericbourg.firstclassmetronome.domain.SessionComputer
-import dev.dericbourg.firstclassmetronome.domain.StatsComputer
 import dev.dericbourg.firstclassmetronome.domain.model.PracticeSession
-import dev.dericbourg.firstclassmetronome.domain.model.PracticeStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,8 +19,7 @@ class PracticeRepository @Inject constructor(
     private val database: AppDatabase,
     private val eventDao: PracticeEventDao,
     private val sessionDao: PracticeSessionDao,
-    private val sessionComputer: SessionComputer,
-    private val statsComputer: StatsComputer
+    private val sessionComputer: SessionComputer
 ) {
 
     suspend fun recordStart() {
@@ -58,12 +54,6 @@ class PracticeRepository @Inject constructor(
                 )
             }
             (computedSessions + fromCompacted).sortedByDescending { it.startTime }
-        }
-    }
-
-    fun getStats(): Flow<PracticeStats> {
-        return getAllSessions().map { sessions ->
-            statsComputer.computeStats(sessions)
         }
     }
 

@@ -1,9 +1,8 @@
 package dev.dericbourg.firstclassmetronome.presentation.worklog
 
 import dev.dericbourg.firstclassmetronome.data.repository.PracticeRepository
-import dev.dericbourg.firstclassmetronome.domain.model.PeriodStats
+import dev.dericbourg.firstclassmetronome.domain.StatsComputer
 import dev.dericbourg.firstclassmetronome.domain.model.PracticeSession
-import dev.dericbourg.firstclassmetronome.domain.model.PracticeStats
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -34,7 +33,6 @@ class WorkLogViewModelTest {
         Dispatchers.setMain(testDispatcher)
         repository = mockk(relaxed = true)
         every { repository.getAllSessions() } returns flowOf(emptyList())
-        every { repository.getStats() } returns flowOf(PracticeStats.EMPTY)
     }
 
     @After
@@ -43,7 +41,7 @@ class WorkLogViewModelTest {
     }
 
     private fun createViewModel(): WorkLogViewModel {
-        return WorkLogViewModel(repository)
+        return WorkLogViewModel(repository, StatsComputer())
     }
 
     @Test
@@ -74,10 +72,10 @@ class WorkLogViewModelTest {
 
     @Test
     fun confirmFirstClear_showsSecondConfirmation() = runTest {
-        val stats = PracticeStats(
-            allTime = PeriodStats(totalDurationMs = 180_000L, daysWithPractice = 3, sessionCount = 5)
-        )
-        every { repository.getStats() } returns flowOf(stats)
+        val sessions = List(5) { i ->
+            PracticeSession(startTime = i * 100_000L, endTime = i * 100_000L + 36_000L, durationMs = 36_000L)
+        }
+        every { repository.getAllSessions() } returns flowOf(sessions)
         viewModel = createViewModel()
         advanceUntilIdle()
         viewModel.showClearDialog()
@@ -128,7 +126,7 @@ class WorkLogViewModelTest {
     }
 
     @Test
-    fun collectsSessions_fromRepository() = runTest {
+    fun collectsSessionsAndStats_fromRepository() = runTest {
         val sessions = listOf(
             PracticeSession(startTime = 1000L, endTime = 2000L, durationMs = 1000L)
         )
@@ -138,19 +136,7 @@ class WorkLogViewModelTest {
 
         assertEquals(sessions, viewModel.state.value.sessions)
         assertFalse(viewModel.state.value.isEmpty)
-    }
-
-    @Test
-    fun collectsStats_fromRepository() = runTest {
-        val stats = PracticeStats(
-            last7Days = PeriodStats(totalDurationMs = 60_000L, daysWithPractice = 1, sessionCount = 1),
-            last30Days = PeriodStats(totalDurationMs = 120_000L, daysWithPractice = 2, sessionCount = 2),
-            allTime = PeriodStats(totalDurationMs = 180_000L, daysWithPractice = 3, sessionCount = 3)
-        )
-        every { repository.getStats() } returns flowOf(stats)
-        viewModel = createViewModel()
-        advanceUntilIdle()
-
-        assertEquals(stats, viewModel.state.value.stats)
+        assertEquals(1, viewModel.state.value.stats.allTime.sessionCount)
+        assertEquals(1000L, viewModel.state.value.stats.allTime.totalDurationMs)
     }
 }
