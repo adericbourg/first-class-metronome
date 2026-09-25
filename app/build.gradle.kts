@@ -144,7 +144,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     // Lifecycle
-    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.process)
@@ -164,7 +163,6 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
-    testImplementation(libs.androidx.room.testing)
 
     // Testing
     testImplementation(libs.junit)
