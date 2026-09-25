@@ -13,12 +13,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.dericbourg.firstclassmetronome.R
 import dev.dericbourg.firstclassmetronome.data.settings.HapticStrength
 import dev.dericbourg.firstclassmetronome.data.settings.SettingsRepository
-import dev.dericbourg.firstclassmetronome.di.DefaultDispatcher
 import dev.dericbourg.firstclassmetronome.domain.model.BeatOutput
 import dev.dericbourg.firstclassmetronome.domain.model.BeatPattern
 import dev.dericbourg.firstclassmetronome.domain.model.ClickSound
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,10 +34,9 @@ import javax.inject.Singleton
 class MetronomePlayer @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val vibrator: Vibrator,
-    private val settingsRepository: SettingsRepository,
-    @DefaultDispatcher dispatcher: CoroutineDispatcher
+    private val settingsRepository: SettingsRepository
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val isPlaying = AtomicBoolean(false)
     private val currentBpm = AtomicInteger(60)
     private val hapticFeedbackEnabled = AtomicBoolean(false)
