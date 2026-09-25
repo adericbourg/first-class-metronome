@@ -49,7 +49,6 @@ fun BeatSelectionScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val tapTempoState by viewModel.tapTempoState.collectAsStateWithLifecycle()
-    val beatConfigState by viewModel.beatConfigState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
@@ -69,7 +68,6 @@ fun BeatSelectionScreen(
     BeatSelectionContent(
         state = state,
         tapTempoState = tapTempoState,
-        beatConfigState = beatConfigState,
         onBpmSelected = viewModel::selectBpm,
         onDecreaseBpm = viewModel::decreaseBpm,
         onIncreaseBpm = viewModel::increaseBpm,
@@ -104,7 +102,6 @@ fun BeatSelectionContent(
     onNavigateToWorkLog: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToAbout: () -> Unit,
-    beatConfigState: BeatConfigState = BeatConfigState(),
     onOpenBeatConfig: () -> Unit = {},
     onSetBeatCount: (Int) -> Unit = {},
     onSetBeatOutput: (Int, BeatOutput) -> Unit = { _, _ -> },
@@ -217,7 +214,7 @@ fun BeatSelectionContent(
         )
     }
 
-    if (beatConfigState.isVisible) {
+    if (state.isBeatConfigVisible) {
         BeatConfigOverlay(
             beatPattern = state.beatPattern,
             onSetBeatCount = onSetBeatCount,

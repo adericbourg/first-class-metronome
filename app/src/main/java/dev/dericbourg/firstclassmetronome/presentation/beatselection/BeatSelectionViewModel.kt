@@ -29,9 +29,6 @@ class BeatSelectionViewModel @Inject constructor(
     private val _tapTempoState = MutableStateFlow(TapTempoState())
     val tapTempoState: StateFlow<TapTempoState> = _tapTempoState.asStateFlow()
 
-    private val _beatConfigState = MutableStateFlow(BeatConfigState())
-    val beatConfigState: StateFlow<BeatConfigState> = _beatConfigState.asStateFlow()
-
     init {
         viewModelScope.launch {
             settingsRepository.settings.collect { settings ->
@@ -175,11 +172,11 @@ class BeatSelectionViewModel @Inject constructor(
     }
 
     fun openBeatConfig() {
-        _beatConfigState.update { it.copy(isVisible = true) }
+        _state.update { it.copy(isBeatConfigVisible = true) }
     }
 
     fun closeBeatConfig() {
-        _beatConfigState.update { it.copy(isVisible = false) }
+        _state.update { it.copy(isBeatConfigVisible = false) }
     }
 
     fun setBeatCount(count: Int) {

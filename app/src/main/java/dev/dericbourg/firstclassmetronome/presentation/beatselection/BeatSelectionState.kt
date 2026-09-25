@@ -11,7 +11,8 @@ data class BeatSelectionState(
     val bpmIncrement: Int = AppSettings.DEFAULT_BPM_INCREMENT,
     val isHapticEnabled: Boolean = false,
     val beatPattern: List<BeatOutput> = BeatPattern.DEFAULT,
-    val currentBeat: Int = NO_BEAT
+    val currentBeat: Int = NO_BEAT,
+    val isBeatConfigVisible: Boolean = false
 ) {
     val isOnGrid: Boolean
         get() = selectedBpm in availableBpmValues

@@ -513,14 +513,14 @@ class BeatSelectionViewModelTest {
 
     @Test
     fun beatConfigInitialState_isNotVisible() {
-        assertFalse(viewModel.beatConfigState.value.isVisible)
+        assertFalse(viewModel.state.value.isBeatConfigVisible)
     }
 
     @Test
     fun openBeatConfig_makesDialogVisible() {
         viewModel.openBeatConfig()
 
-        assertTrue(viewModel.beatConfigState.value.isVisible)
+        assertTrue(viewModel.state.value.isBeatConfigVisible)
     }
 
     @Test
@@ -529,7 +529,7 @@ class BeatSelectionViewModelTest {
 
         viewModel.closeBeatConfig()
 
-        assertFalse(viewModel.beatConfigState.value.isVisible)
+        assertFalse(viewModel.state.value.isBeatConfigVisible)
     }
 
     @Test
