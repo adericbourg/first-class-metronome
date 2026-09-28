@@ -25,6 +25,7 @@ jobs:
     uses: ./.github/workflows/bump-version.yml
     with:
       bump_type: ${{ inputs.bump_type }}
+    secrets: inherit
 
   publish:
     runs-on: ubuntu-latest
@@ -90,6 +91,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: main
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6

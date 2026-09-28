@@ -30,6 +30,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -120,4 +121,4 @@ jobs:
         env:
           VERSION_NAME: ${{ steps.version.outputs.version_name }}
         run: |
-          git push origin HEAD:main "v${VERSION_NAME}"
+          git push --atomic origin HEAD:main "v${VERSION_NAME}"
